@@ -2,12 +2,12 @@
 
 ##Binary Cross Entropy loss (BCEloss)
 
-$\mathbf{BCE}_{loss} = - [ \nu_{gt} * \log (\nu_{pred}) + (1 - \nu_{gt}) * \log (1 - \nu_{pred}) ]$
+${BCE}_{loss} = - [ \nu_{gt} * \log (\nu_{pred}) + (1 - \nu_{gt}) * \log (1 - \nu_{pred}) ]$
 
 当 $\nu_{gt}$ 是 one-hot 类型时
 
 $
-\mathbf{BCE}_{loss}=
+{BCE}_{loss}=
 \begin{cases}
  \log (\nu_{pred}), &if\ \nu_{gt}\ = 1\\
 \log (1 - \nu_{pred}), &if\  \nu_{gt}\ = 0
@@ -30,15 +30,15 @@ criterion(output, target)
 ###Balanced BCE
 
 $
-\mathbf{BCE}_{loss}^{Balanced} = - [ \alpha * \nu_{gt} * \log (\nu_{pred}) + (1 - \alpha) (1 - \nu_{gt}) * \log (1 - \nu_{pred}) ]
+{BCE}_{loss}^{Balanced} = - [ \alpha * \nu_{gt} * \log (\nu_{pred}) + (1 - \alpha) (1 - \nu_{gt}) * \log (1 - \nu_{pred}) ]
 $
 
 当 $\nu_{gt}$ 是 one-hot 类型时
 
 $
 \begin{aligned}
-\mathbf{BCE}_{loss}^{Balanced} &= - [ (\alpha * \nu_{gt} + (1 - \alpha) (1 - \nu_{gt}) )* \log (\nu_{pred}) + (\alpha * \nu_{gt} + (1 - \alpha) (1 - \nu_{gt}) )* \log (1 - \nu_{pred}) ] \\
-&= [\alpha * \nu_{gt} + (1 - \alpha) (1 - \nu_{gt}) ] * \mathbf{BCE}_{loss}
+{BCE}_{loss}^{Balanced} &= - [ (\alpha * \nu_{gt} + (1 - \alpha) (1 - \nu_{gt}) )* \log (\nu_{pred}) + (\alpha * \nu_{gt} + (1 - \alpha) (1 - \nu_{gt}) )* \log (1 - \nu_{pred}) ] \\
+&= [\alpha * \nu_{gt} + (1 - \alpha) (1 - \nu_{gt}) ] * {BCE}_{loss}
 \end{aligned}
 $
 
@@ -79,7 +79,7 @@ paper: (https://arxiv.org/pdf/1708.02002.pdf)
 
 $
 \begin{aligned}
-\mathbf{FL} &= - [ \nu_{gt} * (1 - \nu_{pred})^{\gamma} * \log (\nu_{pred}) + (1 - \nu_{gt}) * \nu_{pred}^{\gamma} * \log (1 - \nu_{pred}) ] \\
+{FL} &= - [ \nu_{gt} * (1 - \nu_{pred})^{\gamma} * \log (\nu_{pred}) + (1 - \nu_{gt}) * \nu_{pred}^{\gamma} * \log (1 - \nu_{pred}) ] \\
 &= - [ \nu_{gt} * (1 - \nu_{pred})^{\gamma} * \log (\nu_{pred}) + (1 - \nu_{gt}) * (1 - ( 1 - \nu_{pred}))^{\gamma} * \log (1 - \nu_{pred}) ]
 \end{aligned}
 $
@@ -88,19 +88,19 @@ $
 
 $
 \begin{aligned}
-\mathbf{FL} &= - (1 - \nu_{t})^{\gamma} * \log (\nu_{t}) = (1 - \nu_{t})^{\gamma} * \mathbf{BCE}_{loss} \ , \ \nu_{t} =
+{FL} &= - (1 - \nu_{t})^{\gamma} * \log (\nu_{t}) = (1 - \nu_{t})^{\gamma} * {BCE}_{loss} \ , \ \nu_{t} =
 \begin{cases}
 \nu_{pred}, &if\ \nu_{gt}\ = 1\\[2ex]
 1 - \nu_{pred}, &if\  \nu_{gt}\ = 0
 \end{cases} \\
-&= [1 - (\nu_{gt} * \nu_{pred} + ( 1 - \nu_{gt} ) * ( 1 - \nu_{pred})) ]^{\gamma} * \mathbf{BCE}_{loss}
+&= [1 - (\nu_{gt} * \nu_{pred} + ( 1 - \nu_{gt} ) * ( 1 - \nu_{pred})) ]^{\gamma} * {BCE}_{loss}
 \end{aligned}
 $
 
 加入 $\alpha$ 正负样本均衡后,可表示如下:
 
 $
-\mathbf{FL} = [\alpha * \nu_{gt} + (1 - \alpha) (1 - \nu_{gt}) ] * [1 - (\nu_{gt} * \nu_{pred} + ( 1 - \nu_{gt} ) * ( 1 - \nu_{pred})) ]^{\gamma} * \mathbf{BCE}_{loss}
+{FL} = [\alpha * \nu_{gt} + (1 - \alpha) (1 - \nu_{gt}) ] * [1 - (\nu_{gt} * \nu_{pred} + ( 1 - \nu_{gt} ) * ( 1 - \nu_{pred})) ]^{\gamma} * {BCE}_{loss}
 $
 
 <!-- ![Focal loss 形式](https://img-blog.csdnimg.cn/dd83fc4d77944c589941fc08b5d6c889.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAQmlnSGFvNjg4,size_20,color_FFFFFF,t_70,g_se,x_16) -->
@@ -149,7 +149,7 @@ paper:(https://arxiv.org/pdf/2006.04388.pdf)
 ###Quality Focal Loss (QFL)
 
 $
-\mathbf{QFL} = -\left| \nu_{gt} - \sigma(\nu_{pred}) \right|^{\beta} * [(1 - \nu_{gt}) * \log(1 - \sigma(\nu_{pred})) +  \nu_{gt} * \log(\sigma(\nu_{pred}))]
+{QFL} = -\left| \nu_{gt} - \sigma(\nu_{pred}) \right|^{\beta} * [(1 - \nu_{gt}) * \log(1 - \sigma(\nu_{pred})) +  \nu_{gt} * \log(\sigma(\nu_{pred}))]
 $
 
 在QFL中负样本的真值 $\nu_{gt} = 0$, 正样本真值 $\nu_{gt} \in [0,1]$ 是0~1之间的概率值.
@@ -164,13 +164,13 @@ $
 当真值 $\nu_{gt} \in {0,1}$ 是 one-hot类型时, QFL和FL具有相同的形式.
 
 $
-\mathbf{QFL} = \left| \nu_{gt} - \sigma(\nu_{pred}) \right|^{\beta} * \mathbf{BCE}_{loss} = \begin{cases}
-[1 - \sigma(\nu_{pred})]^{\beta} * \mathbf{BCE}_{loss}, &if\ \nu_{gt}\ = 1\\[2ex]
-\sigma(\nu_{pred})^{\beta} * \mathbf{BCE}_{loss}, &if\  \nu_{gt}\ = 0
-\end{cases} = (1 - \nu_{t})^{\beta} * \mathbf{BCE}_{loss} , \nu_{t} = \begin{cases}
+{QFL} = \left| \nu_{gt} - \sigma(\nu_{pred}) \right|^{\beta} * {BCE}_{loss} = \begin{cases}
+[1 - \sigma(\nu_{pred})]^{\beta} * {BCE}_{loss}, &if\ \nu_{gt}\ = 1\\[2ex]
+\sigma(\nu_{pred})^{\beta} * {BCE}_{loss}, &if\  \nu_{gt}\ = 0
+\end{cases} = (1 - \nu_{t})^{\beta} * {BCE}_{loss} , \nu_{t} = \begin{cases}
 \sigma(\nu_{pred}) , &if\ \nu_{gt}\ = 1\\[2ex]
 1 - \sigma(\nu_{pred}), &if\  \nu_{gt}\ = 0
-\end{cases} = \mathbf{FL}
+\end{cases} = {FL}
 $
 
 ```python
@@ -209,7 +209,7 @@ Distribution Focal Loss 在 Generalized Focal Loss 中被用作 box_regression. 
 
 $\hat{y} = \int_\infty^\infty \delta(x-y)xdx \sim \int_{y_0}^{y_n} P(x_i)x_i = \sum_{i=0}^n P(x_i)x_i $, $ P(x_i) $ 表示在 $x_i$ 处对 $\hat{y}$ 的概率估计,且有 $\sum^n_{i=0} P(x_i) = 1$. 通过设定分度将边界的估计问题转化为对边界值的分布概率的估计问题.
 
-$\mathbf{DFL}(\mathcal{S}_i,\mathcal{S}_{i+1}) = -((y_{i+1} - y)\log(\mathcal{S}_{i+1}) + (y - y_i)\log(\mathcal{S}_{i})) \ , \ \mathcal{S}_i=\frac{y_{i+1}-y}{y_{i+1}-y_i}$，$\mathcal{S}_{i+1}=\frac{y - y_i}{y_{i+1}-y_i}$
+${DFL}({S}_i,{S}_{i+1}) = -((y_{i+1} - y)\log({S}_{i+1}) + (y - y_i)\log({S}_{i})) \ , \ {S}_i=\frac{y_{i+1}-y}{y_{i+1}-y_i}$，${S}_{i+1}=\frac{y - y_i}{y_{i+1}-y_i}$
 
 DFL的优化目标使得 $\hat{y}$ 概率映射到 $ceil(y)$ 和 $floor(y)$ 的线性加权和最小
 
@@ -248,10 +248,10 @@ referenced to https://blog.csdn.net/qq_38308388/article/details/121640312**
 paper:(https://arxiv.org/pdf/2008.13367.pdf)
 
 $
-\mathbf{VFL} = \begin{cases}
+{VFL} = \begin{cases}
 -\nu_{gt-score}*[ \nu_{gt-score} * \log (\nu_{pred}) + (1 - \nu_{gt-score}) * \log (1 - \nu_{pred}) ], &if\ \nu_{gt-score}\ \gt 0\\[2ex]
 -\alpha*\nu_{pred}^\gamma*\log (1 - \nu_{pred}), &if\  \nu_{gt-score}\ = 0
-\end{cases} = [\alpha*\nu_{pred}^\gamma*(1 - (\nu_{gt-score} >0)) + \nu_{gt-score}]* \mathbf{BCE}_{loss}(\nu_{pred},\nu_{gt-score})
+\end{cases} = [\alpha*\nu_{pred}^\gamma*(1 - (\nu_{gt-score} >0)) + \nu_{gt-score}]* {BCE}_{loss}(\nu_{pred},\nu_{gt-score})
 $
 
 VFL以IoU-Aware Classification Score(IACS)作为优化目标, $\nu_{gt-score}$ 是pred_box和gt_box的IOU * $\nu_{gt}$. 
@@ -303,9 +303,9 @@ torch中单分类和多分类的损失没有什么重大的分别
 
 ###IOU Loss
 
-$\mathbf{IOU} = \frac{Intersection(b^{pred},b^{gt})}{Union(b^{pred},b^{gt})} = \frac{Intersection(b^{pred},b^{gt})}{\mathcal{S}^{pred} + \mathcal{S}^{gt} - Intersection(b^{pred},b^{gt})}$
+${IOU} = \frac{Intersection(b^{pred},b^{gt})}{Union(b^{pred},b^{gt})} = \frac{Intersection(b^{pred},b^{gt})}{{S}^{pred} + {S}^{gt} - Intersection(b^{pred},b^{gt})}$
 
-$ Intersection(b^{pred},b^{gt}) = \mathbf{maximum}\left(\mathbf{minimum}(b^{pred}_r,b^{gt}_r)-\mathbf{maximum}(b^{pred}_l,b^{gt}_l),0 \right) * \mathbf{maximum}\left(\mathbf{minimum}(b^{pred}_b,b^{gt}_b)-\mathbf{maximum}(b^{pred}_t,b^{gt}_t),0\right) = \mathbf{I}_w * \mathbf{I}_h$
+$ Intersection(b^{pred},b^{gt}) = {maximum}\left({minimum}(b^{pred}_r,b^{gt}_r)-{maximum}(b^{pred}_l,b^{gt}_l),0 \right) * {maximum}\left({minimum}(b^{pred}_b,b^{gt}_b)-{maximum}(b^{pred}_t,b^{gt}_t),0\right) = {I}_w * {I}_h$
 
 $\cal{L}_{IOU}$ (IOU_loss)是anchor_pred的IOU和 $\nu_{gt}$ 的交叉熵, $\cal{L}_{IOU} = \nu_{gt} * \log (IOU) + (1 - \nu_{gt}) * \log (1 - IOU)$
 
@@ -315,19 +315,19 @@ paper:(https://arxiv.org/pdf/1608.01471.pdf)
 
 IOU_loss的反向传播需要计算 $b^{pred}$ 对于 $\cal{L}_{IOU}$ 中各项的偏导.
 
-$\frac{\partial{\mathcal{S}^{pred}}}{\partial{b^{pred}_r}\ (\mathbf{or} \ \partial{b^{pred}_l})} = b^{pred}_b - b^{pred}_t \ ,\ \frac{\partial{\mathcal{S}^{pred}}}{\partial{b^{pred}_t}\ (\mathbf{or} \ \partial{b^{pred}_b})} = b^{pred}_r - b^{pred}_l $
+$\frac{\partial{{S}^{pred}}}{\partial{b^{pred}_r}\ ({or} \ \partial{b^{pred}_l})} = b^{pred}_b - b^{pred}_t \ ,\ \frac{\partial{{S}^{pred}}}{\partial{b^{pred}_t}\ ({or} \ \partial{b^{pred}_b})} = b^{pred}_r - b^{pred}_l $
 
-$\frac{\partial{Intersection}}{\partial{b^{pred}_r}\ (\mathbf{or} \ \partial{b^{pred}_l})} = \begin{cases} \mathbf{I}_h ,&if\ b^{pred}_r < b^{gt}_r \ (\mathbf{or} \ b^{pred}_l > b^{gt}_l )\\[2ex] 0 ,&otherwise \end{cases}$ , $\frac{\partial{Intersection}}{\partial{b^{pred}_t}\ (\mathbf{or} \ \partial{b^{pred}_b})} = \begin{cases} \mathbf{I}_w ,&if\ b^{pred}_t > b^{gt}_t \ (\mathbf{or} \ b^{pred}_b < b^{gt}_b )\\[2ex] 0 ,&otherwise \end{cases}$
+$\frac{\partial{Intersection}}{\partial{b^{pred}_r}\ ({or} \ \partial{b^{pred}_l})} = \begin{cases} {I}_h ,&if\ b^{pred}_r < b^{gt}_r \ ({or} \ b^{pred}_l > b^{gt}_l )\\[2ex] 0 ,&otherwise \end{cases}$ , $\frac{\partial{Intersection}}{\partial{b^{pred}_t}\ ({or} \ \partial{b^{pred}_b})} = \begin{cases} {I}_w ,&if\ b^{pred}_t > b^{gt}_t \ ({or} \ b^{pred}_b < b^{gt}_b )\\[2ex] 0 ,&otherwise \end{cases}$
 
 ###GIOU
 
 paper:(https://arxiv.org/pdf/1902.09630.pdf)
 
-$\mathbf{GIOU} = \mathbf{IOU} - \frac{A^c-Union}{A^c}$
+${GIOU} = {IOU} - \frac{A^c-Union}{A^c}$
 
-$A^c = \left(\mathbf{maximum}(b^{pred}_r,b^{gt}_r)-\mathbf{minimum}(b^{pred}_l,b^{gt}_l)\right) * \left(\mathbf{maximum}(b^{pred}_b,b^{gt}_b)-\mathbf{minimum}(b^{pred}_t,b^{gt}_t)\right) $
+$A^c = \left({maximum}(b^{pred}_r,b^{gt}_r)-{minimum}(b^{pred}_l,b^{gt}_l)\right) * \left({maximum}(b^{pred}_b,b^{gt}_b)-{minimum}(b^{pred}_t,b^{gt}_t)\right) $
 
-$\cal{L}_{GIOU} = 1 - \mathbf{GIOU} \ \in[0,2]$
+$\cal{L}_{GIOU} = 1 - {GIOU} \ \in[0,2]$
 
 **GIOU_Loss加入非重合区域的影响，当IOU值相同时，非重合区域占比越小，代表预测框与目标框的对比效果越好。**
 
@@ -335,11 +335,11 @@ $\cal{L}_{GIOU} = 1 - \mathbf{GIOU} \ \in[0,2]$
 
 paper:(https://arxiv.org/pdf/1911.08287v1.pdf)
 
-$\mathbf{DIOU} = \mathbf{IOU} - \left(\frac{\rho^2({bc}^{pred},{bc}^{gt})}{c^2}\right) = \mathbf{IOU} - \left(\frac{d^2}{c^2}\right)$
+${DIOU} = {IOU} - \left(\frac{\rho^2({bc}^{pred},{bc}^{gt})}{c^2}\right) = {IOU} - \left(\frac{d^2}{c^2}\right)$
 
 ${bc}^{pred}$,${bc}^{gt}$ 表示pred_box和gt_box的中心点.d代表pred_box和gt_box的中心点距离,c代表pred_box和gt_box的最小外接矩形对角线长度。
 
-$\cal{L}_{DIOU} = 1 - \mathbf{DIOU} \ \in[0,2]$
+$\cal{L}_{DIOU} = 1 - {DIOU} \ \in[0,2]$
 
 **DIOU_Loss用中心点的归一化距离代替了GIOU中的非重合区域占比指标,可以直接最小化两个目标框的距离，比GIOU收敛的更快.在目标框和预测框相互包裹的条件下，DIOU_Loss可以使回归非常快，而GIOU_Loss几乎退化为IOU Loss.**
 
@@ -347,9 +347,9 @@ $\cal{L}_{DIOU} = 1 - \mathbf{DIOU} \ \in[0,2]$
 
 paper:(https://arxiv.org/pdf/2005.03572.pdf)
 
-$\mathbf{CIOU} = \mathbf{IOU} - \left(\frac{\rho^2({bc}^{pred},{bc}^{gt})}{c^2}+\alpha\nu\right),\ \nu = \frac{4}{\pi^2}(arctan\frac{w^{gt}}{h^{gt}}-arctan\frac{w}{h})^2,\ \alpha=\frac{\nu}{1-IOU+\nu}$
+${CIOU} = {IOU} - \left(\frac{\rho^2({bc}^{pred},{bc}^{gt})}{c^2}+\alpha\nu\right),\ \nu = \frac{4}{\pi^2}(arctan\frac{w^{gt}}{h^{gt}}-arctan\frac{w}{h})^2,\ \alpha=\frac{\nu}{1-IOU+\nu}$
 
-$\cal{L}_{CIOU} = 1 - \mathbf{CIOU} \ \in[0,2]$
+$\cal{L}_{CIOU} = 1 - {CIOU} \ \in[0,2]$
 
 **CIoU在DIoU的基础上增加了检测框尺度的loss，增加了长和宽的loss，使得预测框就会更加的符合真实框.CIOU使得评估更加准确,但增加了loss的计算量.**
 
@@ -402,6 +402,6 @@ def bbox_iou(box1, box2, xywh=True, GIoU=False, DIoU=False, CIoU=False, eps=1e-7
 
 ##Smooth L1 loss
 
-$J = \frac{1}{N}\sum^{N}_{i=1}\mathcal{Smooth\ L1}\left(\nu_{pred}-\nu_{gt}\right) = \begin{cases}0.5(\nu_{pred}-\nu_{gt})^2/\beta ,\ &\left|\nu_{pred}-\nu_{gt}\right| < \beta \\ \left|\nu_{pred}-\nu_{gt}\right| - 0.5\beta,\ &Otherwise\end{cases}$
+$J = \frac{1}{N}\sum^{N}_{i=1}{Smooth\ L1}\left(\nu_{pred}-\nu_{gt}\right) = \begin{cases}0.5(\nu_{pred}-\nu_{gt})^2/\beta ,\ &\left|\nu_{pred}-\nu_{gt}\right| < \beta \\ \left|\nu_{pred}-\nu_{gt}\right| - 0.5\beta,\ &Otherwise\end{cases}$
 
 <image src="img/smooth_L1.png">
