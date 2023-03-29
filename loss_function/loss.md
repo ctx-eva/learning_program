@@ -262,7 +262,7 @@ $\mathbf{IOU} = \frac{Intersection(b^{pred},b^{gt})}{Union(b^{pred},b^{gt})} = \
 
 $ Intersection(b^{pred},b^{gt}) = \mathbf{maximum}\left(\mathbf{minimum}(b^{pred}_r,b^{gt}_r)-\mathbf{maximum}(b^{pred}_l,b^{gt}_l),0 \right) * \mathbf{maximum}\left(\mathbf{minimum}(b^{pred}_b,b^{gt}_b)-\mathbf{maximum}(b^{pred}_t,b^{gt}_t),0\right) = \mathbf{I}_w * \mathbf{I}_h$
 
-$\cal{L}_{IOU}$ (IOU_loss)是anchor_pred的IOU和 $\nu_{gt}$ 的交叉熵, $\cal{L}_{IOU} = \nu_{gt} * \log (IOU) + (1 - \nu_{gt}) * \log (1 - IOU)$
+IOU_loss ($\cal{L}_{IOU}$)是anchor_pred的IOU和 $\nu_{gt}$ 的交叉熵, $\cal{L}_{IOU} = \nu_{gt} * \log (IOU) + (1 - \nu_{gt}) * \log (1 - IOU)$
 
 ####IOU backpropagation
 
