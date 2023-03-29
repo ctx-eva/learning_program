@@ -2,7 +2,7 @@
 
 ##Binary Cross Entropy loss (BCEloss)
 
-![BCE_loss](https://latex.codecogs.com/svg.image?\mathbf{BCE}_{loss}=-[ \nu_{gt} * \log (\nu_{pred}) + (1 - \nu_{gt}) * \log (1 - \nu_{pred}) ])
+![BCE_loss](https://latex.codecogs.com/svg.image?\mathbf{BCE}_{loss}=-[&space;\nu_{gt}&space;*&space;\log&space;(\nu_{pred})&space;&plus;&space;(1&space;-&space;\nu_{gt})&space;*&space;\log&space;(1&space;-&space;\nu_{pred})&space;])
 
 当 $\nu_{gt}$ 是 one-hot 类型时
 
@@ -29,7 +29,7 @@ criterion(output, target)
 
 ###Balanced BCE
 
-![Balanced BCE_loss](https://latex.codecogs.com/svg.image?\mathbf{BCE}_{loss}^{Balanced}=-[ \alpha * \nu_{gt} * \log (\nu_{pred}) + (1 - \alpha) (1 - \nu_{gt}) * \log (1 - \nu_{pred}) ]
+![Balanced BCE_loss](https://latex.codecogs.com/svg.image?\mathbf{BCE}_{loss}^{Balanced}=-[&space;\alpha&space;*&space;\nu_{gt}&space;*&space;\log&space;(\nu_{pred})&space;&plus;&space;(1&space;-&space;\alpha)&space;(1&space;-&space;\nu_{gt})&space;*&space;\log&space;(1&space;-&space;\nu_{pred})&space;])
 
 当 $\nu_{gt}$ 是 one-hot 类型时
 
