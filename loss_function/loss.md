@@ -2,17 +2,11 @@
 
 ##Binary Cross Entropy loss (BCEloss)
 
-![BCE_loss](https://latex.codecogs.com/svg.image?\mathbf{BCE}_{loss}=-[&space;\nu_{gt}&space;*&space;\log&space;(\nu_{pred})&space;&plus;&space;(1&space;-&space;\nu_{gt})&space;*&space;\log&space;(1&space;-&space;\nu_{pred})&space;])
+![BCE_loss](img/matheq/BCE_loss.svg)
 
 当 $\nu_{gt}$ 是 one-hot 类型时
 
-$
-\mathbf{BCE}_{loss}=
-\begin{cases}
- \log (\nu_{pred}), &if\ \nu_{gt}\ = 1\\
-\log (1 - \nu_{pred}), &if\  \nu_{gt}\ = 0
-\end{cases}
-$
+![BCE_loss one-hot](img/matheq/BEC_loss-one-hot.svg)
 
 ```python
 import torch
@@ -29,16 +23,11 @@ criterion(output, target)
 
 ###Balanced BCE
 
-![Balanced BCE_loss](https://latex.codecogs.com/svg.image?\mathbf{BCE}_{loss}^{Balanced}=-[&space;\alpha&space;*&space;\nu_{gt}&space;*&space;\log&space;(\nu_{pred})&space;&plus;&space;(1&space;-&space;\alpha)&space;(1&space;-&space;\nu_{gt})&space;*&space;\log&space;(1&space;-&space;\nu_{pred})&space;])
+![Balanced BCE_loss](img/matheq/Balanced-BCE_loss.svg)
 
 当 $\nu_{gt}$ 是 one-hot 类型时
 
-$
-\begin{aligned}
-\mathbf{BCE}_{loss}^{Balanced} &= - [ (\alpha * \nu_{gt} + (1 - \alpha) (1 - \nu_{gt}) )* \log (\nu_{pred}) + (\alpha * \nu_{gt} + (1 - \alpha) (1 - \nu_{gt}) )* \log (1 - \nu_{pred}) ] \\
-&= [\alpha * \nu_{gt} + (1 - \alpha) (1 - \nu_{gt}) ] * \mathbf{BCE}_{loss}
-\end{aligned}
-$
+![Balanced BCE_loss ong-hot](img/matheq/Balanced-BCE_loss-one-hot.svg)
 
 Balanced BCE 通过 $\alpha$ 控制正负样本的加权参数,改变正负样本参与loss计算的贡献比例,对目标检测类任务通过 $\alpha$ 平衡正负样本间的数量差异.
 
@@ -75,31 +64,15 @@ class BalancedBCELoss(nn.Module):
 
 paper: (https://arxiv.org/pdf/1708.02002.pdf)
 
-$
-\begin{aligned}
-\mathbf{FL} &= - [ \nu_{gt} * (1 - \nu_{pred})^{\gamma} * \log (\nu_{pred}) + (1 - \nu_{gt}) * \nu_{pred}^{\gamma} * \log (1 - \nu_{pred}) ] \\
-&= - [ \nu_{gt} * (1 - \nu_{pred})^{\gamma} * \log (\nu_{pred}) + (1 - \nu_{gt}) * (1 - ( 1 - \nu_{pred}))^{\gamma} * \log (1 - \nu_{pred}) ]
-\end{aligned}
-$
+![Focal loss](img/matheq/FL.svg)
 
 当 $\nu_{gt}$ 是 one-hot 类型时
 
-$
-\begin{aligned}
-\mathbf{FL} &= - (1 - \nu_{t})^{\gamma} * \log (\nu_{t}) = (1 - \nu_{t})^{\gamma} * \mathbf{BCE}_{loss} \ , \ \nu_{t} =
-\begin{cases}
-\nu_{pred}, &if\ \nu_{gt}\ = 1\\[2ex]
-1 - \nu_{pred}, &if\  \nu_{gt}\ = 0
-\end{cases} \\
-&= [1 - (\nu_{gt} * \nu_{pred} + ( 1 - \nu_{gt} ) * ( 1 - \nu_{pred})) ]^{\gamma} * \mathbf{BCE}_{loss}
-\end{aligned}
-$
+![Focal loss one-hot](img/matheq/FL-one-hot.svg)
 
 加入 $\alpha$ 正负样本均衡后,可表示如下:
 
-$
-\mathbf{FL} = [\alpha * \nu_{gt} + (1 - \alpha) (1 - \nu_{gt}) ] * [1 - (\nu_{gt} * \nu_{pred} + ( 1 - \nu_{gt} ) * ( 1 - \nu_{pred})) ]^{\gamma} * \mathbf{BCE}_{loss}
-$
+![Focal loss one-hot balance](img/matheq/FL_with_balance.svg) 
 
 <!-- ![Focal loss 形式](https://img-blog.csdnimg.cn/dd83fc4d77944c589941fc08b5d6c889.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAQmlnSGFvNjg4,size_20,color_FFFFFF,t_70,g_se,x_16) -->
 ![Focal loss 形式](img/FocalLoss.png)
@@ -146,12 +119,9 @@ paper:(https://arxiv.org/pdf/2006.04388.pdf)
 
 ###Quality Focal Loss (QFL)
 
-$
-\mathbf{QFL} = -\left| \nu_{gt} - \sigma(\nu_{pred}) \right|^{\beta} * [(1 - \nu_{gt}) * \log(1 - \sigma(\nu_{pred})) +  \nu_{gt} * \log(\sigma(\nu_{pred}))]
-$
+![QFL](img/matheq/QFL.svg)
 
 在QFL中负样本的真值 $\nu_{gt} = 0$, 正样本真值 $\nu_{gt} \in [0,1]$ 是0~1之间的概率值.
-
 
 <image src="img/QualityFocalLoss.png">
 
@@ -161,15 +131,7 @@ $
 
 当真值 $\nu_{gt} \in {0,1}$ 是 one-hot类型时, QFL和FL具有相同的形式.
 
-$
-\mathbf{QFL} = \left| \nu_{gt} - \sigma(\nu_{pred}) \right|^{\beta} * \mathbf{BCE}_{loss} = \begin{cases}
-[1 - \sigma(\nu_{pred})]^{\beta} * \mathbf{BCE}_{loss}, &if\ \nu_{gt}\ = 1\\[2ex]
-\sigma(\nu_{pred})^{\beta} * \mathbf{BCE}_{loss}, &if\  \nu_{gt}\ = 0
-\end{cases} = (1 - \nu_{t})^{\beta} * \mathbf{BCE}_{loss} , \nu_{t} = \begin{cases}
-\sigma(\nu_{pred}) , &if\ \nu_{gt}\ = 1\\[2ex]
-1 - \sigma(\nu_{pred}), &if\  \nu_{gt}\ = 0
-\end{cases} = \mathbf{FL}
-$
+![QFL2FL](img/matheq/QFL2FL.svg)
 
 ```python
 import torch
@@ -207,7 +169,7 @@ Distribution Focal Loss 在 Generalized Focal Loss 中被用作 box_regression. 
 
 $\hat{y} = \int_\infty^\infty \delta(x-y)xdx \sim \int_{y_0}^{y_n} P(x_i)x_i = \sum_{i=0}^n P(x_i)x_i $, $ P(x_i) $ 表示在 $x_i$ 处对 $\hat{y}$ 的概率估计,且有 $\sum^n_{i=0} P(x_i) = 1$. 通过设定分度将边界的估计问题转化为对边界值的分布概率的估计问题.
 
-$\mathbf{DFL}(\mathcal{S}_i,\mathcal{S}_{i+1}) = -((y_{i+1} - y)\log(\mathcal{S}_{i+1}) + (y - y_i)\log(\mathcal{S}_{i})) \ , \ \mathcal{S}_i=\frac{y_{i+1}-y}{y_{i+1}-y_i}$，$\mathcal{S}_{i+1}=\frac{y - y_i}{y_{i+1}-y_i}$
+![DFL](img/matheq/DFL.svg),![tj](img/matheq/DFL-tj.svg)
 
 DFL的优化目标使得 $\hat{y}$ 概率映射到 $ceil(y)$ 和 $floor(y)$ 的线性加权和最小
 
@@ -245,12 +207,7 @@ referenced to https://blog.csdn.net/qq_38308388/article/details/121640312**
 
 paper:(https://arxiv.org/pdf/2008.13367.pdf)
 
-$
-\mathbf{VFL} = \begin{cases}
--\nu_{gt-score}*[ \nu_{gt-score} * \log (\nu_{pred}) + (1 - \nu_{gt-score}) * \log (1 - \nu_{pred}) ], &if\ \nu_{gt-score}\ \gt 0\\[2ex]
--\alpha*\nu_{pred}^\gamma*\log (1 - \nu_{pred}), &if\  \nu_{gt-score}\ = 0
-\end{cases} = [\alpha*\nu_{pred}^\gamma*(1 - (\nu_{gt-score} >0)) + \nu_{gt-score}]* \mathbf{BCE}_{loss}(\nu_{pred},\nu_{gt-score})
-$
+![VFL](img/matheq/VFL.svg)
 
 VFL以IoU-Aware Classification Score(IACS)作为优化目标, $\nu_{gt-score}$ 是pred_box和gt_box的IOU * $\nu_{gt}$. 
 
@@ -315,7 +272,7 @@ IOU_loss的反向传播需要计算 $b^{pred}$ 对于 $\cal{L}_{IOU}$ 中各项�
 
 $\frac{\partial{\mathcal{S}^{pred}}}{\partial{b^{pred}_r}\ (\mathbf{or} \ \partial{b^{pred}_l})} = b^{pred}_b - b^{pred}_t \ ,\ \frac{\partial{\mathcal{S}^{pred}}}{\partial{b^{pred}_t}\ (\mathbf{or} \ \partial{b^{pred}_b})} = b^{pred}_r - b^{pred}_l $
 
-$\frac{\partial{Intersection}}{\partial{b^{pred}_r}\ (\mathbf{or} \ \partial{b^{pred}_l})} = \begin{cases} \mathbf{I}_h ,&if\ b^{pred}_r < b^{gt}_r \ (\mathbf{or} \ b^{pred}_l > b^{gt}_l )\\[2ex] 0 ,&otherwise \end{cases}$ , $\frac{\partial{Intersection}}{\partial{b^{pred}_t}\ (\mathbf{or} \ \partial{b^{pred}_b})} = \begin{cases} \mathbf{I}_w ,&if\ b^{pred}_t > b^{gt}_t \ (\mathbf{or} \ b^{pred}_b < b^{gt}_b )\\[2ex] 0 ,&otherwise \end{cases}$
+![iou_bp1](img/matheq/IOUbp1.svg),![iou_bp2](img/matheq/IOUbp2.svg)
 
 ###GIOU
 
@@ -400,6 +357,6 @@ def bbox_iou(box1, box2, xywh=True, GIoU=False, DIoU=False, CIoU=False, eps=1e-7
 
 ##Smooth L1 loss
 
-$J = \frac{1}{N}\sum^{N}_{i=1}\mathcal{Smooth\ L1}\left(\nu_{pred}-\nu_{gt}\right) = \begin{cases}0.5(\nu_{pred}-\nu_{gt})^2/\beta ,\ &\left|\nu_{pred}-\nu_{gt}\right| < \beta \\ \left|\nu_{pred}-\nu_{gt}\right| - 0.5\beta,\ &Otherwise\end{cases}$
+![smooth_L1_loss](img/matheq/smoothl1.svg)
 
 <image src="img/smooth_L1.png">
