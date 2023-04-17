@@ -1,4 +1,4 @@
-from heapq import merge
+#from heapq import merge
 import numpy as np  
 from pathlib import Path
 import cv2   
@@ -12,8 +12,10 @@ import math
 #====================================
 
 #由于循环方向原因对于邻域范围没有必要进行全搜索
-OFFSETS_4 = np.array([[0, -1], [-1, 0]]) # 左，上
-OFFSETS_8 = np.array([[0, -1], [-1,  0],[-1, -1], [-1,  1]]) # 左,上,左上,右上
+OFFSETS_4_SCAN = [[0, -1], [-1, 0]] # 左，上
+OFFSETS_8_SCAN = [[0, -1], [-1,  0],[-1, -1], [-1,  1]] # 左,上,左上,右上
+OFFSETS_4_SET = [[0, 0], [1, 0], [0, 1]] # 中, 右，下
+OFFSETS_8_SET = [[0, 0], [0, 1], [1,  0],[-1, 1], [1,  1]] # 中, 右, 下, 左下, 右下
 
 def first_pass(imb,k):
     '''
@@ -32,73 +34,38 @@ def first_pass(imb,k):
         for j in range(w):
             if imb[i][j] == 0:
                 continue
-            else:
-                near = []
-                for p in k:
-                    p_ = [i+p[0],j+p[1]]
-                    if p_[0] < 0 or p_[1] <0 or p_[1] >=w:  #判断邻域越界
-                        continue
-                    else:
-                        if label_map[p_[0]][p_[1]] >0:
-                            near.append(label_map[p_[0]][p_[1]])  #记录邻域大于0的标签值
-                if len(near):
-                    minval = min(near)  #将邻域最小值赋予给B(i,j)
-                    label_map[i][j] = minval
-                    near_set = set(near)
-                    if len(near_set) > 1:  #如果邻域出现多个不为0的标签值
-                        merge = False
-                        merge_list_v = near_set
-                        merge_list_k = []
-                        for key,value in label_dict.items():
-                            if len(near_set & value):  #判断邻域和所有的label关系是否有交集
-                                merge = True
-                                merge_list_v |= value  #有交集则求二者的并集
-                                merge_list_k.append(key)
-                        if merge:
-                            if len(merge_list_k) > 1:
-                                for mk in merge_list_k:
-                                    del label_dict[mk]  #如果邻域和多个label关系同时存在交集,删除原有label关系的对应键值对
-                            label_dict[min(merge_list_v)] = merge_list_v
-                        else:
-                            label_dict[minval] = near_set
+            near = []
+            for p in k:
+                p_ = [i+p[0],j+p[1]]
+                if p_[0] < 0 or p_[1] <0 or p_[1] >=w:  #判断邻域越界
+                    continue
                 else:
-                    label_map[i][j] = label  #标签值都为0,则赋予B(i,j)一个label,label += 1
-                    label += 1
+                    if label_map[p_[0]][p_[1]] >0:
+                        near.append(label_map[p_[0]][p_[1]])  #记录邻域大于0的标签值
+            if len(near):
+                minval = min(near)  #将邻域最小值赋予给B(i,j)
+                label_map[i][j] = minval
+                near_set = set(near)
+                if len(near_set) > 1:  #如果邻域出现多个不为0的标签值
+                    merge = False
+                    merge_list_v = near_set
+                    merge_list_k = []
+                    for key,value in label_dict.items():
+                        if len(near_set & value):  #判断邻域和所有的label关系是否有交集
+                            merge = True
+                            merge_list_v |= value  #有交集则求二者的并集
+                            merge_list_k.append(key)
+                    if merge:
+                        if len(merge_list_k) > 1:
+                            for mk in merge_list_k:
+                                del label_dict[mk]  #如果邻域和多个label关系同时存在交集,删除原有label关系的对应键值对
+                        label_dict[min(merge_list_v)] = merge_list_v
+                    else:
+                        label_dict[minval] = near_set
+            else:
+                label_map[i][j] = label  #标签值都为0,则赋予B(i,j)一个label,label += 1
+                label += 1
     return label_map, label_dict
-
-# def second_pass_(map,label_list,min_list):
-#     '''
-#     列表生成式不能提前跳过循环,速度并不快
-#     '''
-#     h,w = map.shape
-#     result = [[min_list[label_list.index(map[i][j])] if map[i][j] in label_list else map[i][j] for j in range(w)] for i in range(h)]
-#     return np.array(result)          
-
-# def second_pass1(map,label_list,min_list):
-#     '''
-#     比列表生成式还慢
-#     '''
-#     h,w = map.shape
-#     for i in range(h):
-#         for j in range(w):  
-#             val = map[i][j]
-#             if val in min_list or val == 0:
-#                 continue
-#             if val in label_list:
-#                 map[i][j] = min_list[label_list.index(map[i][j])]
-
-#     return map
-
-# def two_pass_(img,kernel=OFFSETS_4):
-#     label_map, label_dict = first_pass(img,k=kernel)    
-#     label_list = []
-#     label_list_min = []
-#     for k,v in label_dict.items():
-#         for i in v:
-#             label_list.append(i)
-#             label_list_min.append(k)
-#     map = second_pass_(label_map,label_list,label_list_min)  
-#     return map    
 
 def second_pass(map,label_dict):
     '''
@@ -147,7 +114,7 @@ def second_pass_gpu(map,label_list,min_list):
     elif get_in(label_list,val):
         map[tx,ty] = min_list[get_index_nb(label_list,val)]
 
-def two_pass(img,kernel=OFFSETS_4):
+def two_pass(img,kernel=OFFSETS_8_SCAN):
     t1 = time.time()
     label_map, label_dict = first_pass(img,k=kernel)
     t2 = time.time()
@@ -157,9 +124,9 @@ def two_pass(img,kernel=OFFSETS_4):
     print("pass2time",t3-t2)
     return map   
 
-def two_pass_gpu(img,kernel=OFFSETS_4):   
-    gpu_st = time.time()
+def two_pass_gpu(img,kernel=OFFSETS_4_SCAN):   
     label_map, label_dict = first_pass(img,k=kernel)
+    gpu_st = time.time()
     dst_gpu = img.copy()
     label_list = []
     label_list_min = []
@@ -179,12 +146,13 @@ def two_pass_gpu(img,kernel=OFFSETS_4):
     second_pass_gpu[blockspergrid,threadsperblock](dImg,label_list,label_list_min)
     cuda.synchronize()
     dst_gpu = dImg.copy_to_host()
-    gpu_end = time.time()
-    print("pass2gpu",gpu_end-gpu_st)  
+    # gpu_end = time.time()
+    # print("pass2gpu",gpu_end-gpu_st)  
     return dst_gpu    
 
 def draw(map):
     values = list(set(map.flatten().tolist()))
+    print("num_labels:",len(values))
     h,w = map.shape
     for i in range(h):
         for j in range(w):
@@ -197,12 +165,15 @@ if __name__ == "__main__":
     _,imb = cv2.threshold(img,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     k1 = np.ones((3, 3), np.uint8)
     imb = cv2.morphologyEx(imb, cv2.MORPH_CLOSE, k1)
-    h,w = imb.shape
     st = time.time()
-    map = two_pass_gpu(imb)
+    map = two_pass(imb)
     fn = time.time()
     print(fn-st)
     result = draw(map)
+    st_cv = time.time()
+    labels = cv2.connectedComponents(imb,connectivity=4)
+    fn_cv = time.time()
+    print(fn_cv-st_cv)
     plt.imshow(result)
     plt.show()
     cv2.imwrite('a_new.jpg',result)

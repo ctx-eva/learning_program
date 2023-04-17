@@ -1,6 +1,8 @@
-#损失函数总结
+# 损失函数总结
+<details>
+<summary>BCEloss</summary>
 
-##Binary Cross Entropy loss (BCEloss)
+## Binary Cross Entropy loss (BCEloss)
 
 ![BCE_loss](img/matheq/BCE_loss.svg)
 
@@ -20,8 +22,12 @@ criterion(m(output), target)
 criterion = torch.nn.BCEWithLogitsLoss()
 criterion(output, target)
 ```
+</details>
 
-###Balanced BCE
+<details>
+<summary>Balanced BCEloss</summary>
+
+## Balanced BCE
 
 ![Balanced BCE_loss](img/matheq/Balanced-BCE_loss.svg)
 
@@ -59,8 +65,12 @@ class BalancedBCELoss(nn.Module):
         else:  # 'none'
             return loss
 ```
+</details>
 
-##Focal loss (FL) 
+<details open>
+<summary>Focal loss</summary>
+
+## Focal loss (FL)
 
 paper: (https://arxiv.org/pdf/1708.02002.pdf)
 
@@ -112,12 +122,16 @@ class FocalLoss(nn.Module):
         else:  # 'none'
             return loss
 ```
+</details>
 
-##Generalized Focal Loss (GFL) 
+<details>
+<summary>Generalized Focal Loss</summary>
+
+## Generalized Focal Loss (GFL)
 
 paper:(https://arxiv.org/pdf/2006.04388.pdf)
 
-###Quality Focal Loss (QFL)
+### Quality Focal Loss (QFL)
 
 ![QFL](img/matheq/QFL.svg)
 
@@ -163,7 +177,8 @@ class QFocalLoss(nn.Module):
         else:  # 'none'
             return loss
 ```
-###Distribution Focal Loss (DFL)
+
+### Distribution Focal Loss (DFL)
 
 Distribution Focal Loss 在 Generalized Focal Loss 中被用作 box_regression. 求取offset形式的边界框(t,l,b,t),这里将 box_regression 问题中边界框的估计视作等效的脉冲响应的概率分布.有 $\int_\infty^\infty \delta(x-y)xdx = 1$ . 将对值的估计范围限制在 $[x_0,x_n]$ 之间,并且令分隔间隔等于1,最终对值的估计可以视为 
 
@@ -202,8 +217,12 @@ class DFocalLoss(nn.Module):
 注意1:input不需要经过softmax,直接从fn层拿出来的张量就可以送入交叉熵中,因为在交叉熵中已经对输入input做了softmax了. 
 注意2:不用对target进行one_hot编码,因为nll_loss函数已经实现了类似one-hot过程. 
 referenced to https://blog.csdn.net/qq_38308388/article/details/121640312**
+</details>
 
-##Varifocal Loss (VFL) 
+<details>
+<summary>Varifocal Loss</summary>
+
+## Varifocal Loss (VFL)
 
 paper:(https://arxiv.org/pdf/2008.13367.pdf)
 
@@ -247,16 +266,24 @@ class VarifocalLoss(nn.Module):
 ```
 
 VFL要解决的问题是,在目标检测中正负样本不均衡,负样本的数量远远大于正样本,通过 $\nu_{pred}^\gamma$ 来削减负样本对结果的影响,对负样本其估计越好,$\nu_{pred}^\gamma$ 值越小,即对越容易分类的负样本给予越低的权重,对越难估计的负样本给予越高的权重,更关注对于难估计的负样本的调整.对于正样本使用参数 $\nu_{gt}$ ,对框iou更大的目标给予更大的权重,使得网络更加关注对iou高的预测框的调整.
+</details>
 
-##多分类损失函数
+<details>
+<summary>多分类损失函数</summary>
+
+## 多分类损失函数
 
 torch中单分类和多分类的损失没有什么重大的分别
 
 **注意:在多分类的时候，我们希望输出是符合概率分布,问题即转化成为对于网络输出如何处理上.常见的有对输出做sigmoid或者softmax.二者均能把输出转换到(0,1)的区间内.但二者目的不同,对于softmax操作是考虑目标分类严格的参照 $\sum^n_{i=0} P(x_i) = 1 $, 例如在DFL对边界值的分布情况还有单个数字识别中的分类就存在这样的情况;对于sigmoid操作,更加关注当前 $\nu_{pred}$ 是否接近 $\nu_{gt}$,比如对一般的目标识别网络,不能简单的将所有分类互斥作为条件带入.**
+</details>
 
-##IOU Loss
+<details>
+<summary>IOU Loss</summary>
 
-###IOU Loss
+## IOU Loss
+
+### IOU Loss
 
 $\mathbf{IOU} = \frac{Intersection(b^{pred},b^{gt})}{Union(b^{pred},b^{gt})} = \frac{Intersection(b^{pred},b^{gt})}{\mathcal{S}^{pred} + \mathcal{S}^{gt} - Intersection(b^{pred},b^{gt})}$
 
@@ -264,7 +291,7 @@ $ Intersection(b^{pred},b^{gt}) = \mathbf{maximum}\left(\mathbf{minimum}(b^{pred
 
 IOU_loss ($\cal{L}_{IOU}$)是anchor-pred的IOU和 $\nu_{gt}$ 的交叉熵, $\cal{L}_{IOU} =\nu_{gt}\log(IOU)+(1 - \nu_{gt})\log(1 - IOU)$
 
-####IOU backpropagation
+#### IOU backpropagation
 
 paper:(https://arxiv.org/pdf/1608.01471.pdf)
 
@@ -274,7 +301,7 @@ $\frac{\partial{\mathcal{S}^{pred}}}{\partial{b^{pred}_r}\ (\mathbf{or} \ \parti
 
 ![iou_bp1](img/matheq/IOUbp1.svg),![iou_bp2](img/matheq/IOUbp2.svg)
 
-###GIOU
+### GIOU
 
 paper:(https://arxiv.org/pdf/1902.09630.pdf)
 
@@ -286,7 +313,7 @@ $\cal{L}_{GIOU} = 1 - \mathbf{GIOU} \ \in[0,2]$
 
 **GIOU_Loss加入非重合区域的影响，当IOU值相同时，非重合区域占比越小，代表预测框与目标框的对比效果越好。**
 
-###DIOU
+### DIOU
 
 paper:(https://arxiv.org/pdf/1911.08287v1.pdf)
 
@@ -298,7 +325,7 @@ $\cal{L}_{DIOU} = 1 - \mathbf{DIOU} \ \in[0,2]$
 
 **DIOU_Loss用中心点的归一化距离代替了GIOU中的非重合区域占比指标,可以直接最小化两个目标框的距离，比GIOU收敛的更快.在目标框和预测框相互包裹的条件下，DIOU_Loss可以使回归非常快，而GIOU_Loss几乎退化为IOU Loss.**
 
-###CIOU
+### CIOU
 
 paper:(https://arxiv.org/pdf/2005.03572.pdf)
 
@@ -310,6 +337,7 @@ $\cal{L}_{CIOU} = 1 - \mathbf{CIOU} \ \in[0,2]$
 
 ```python
 import torch
+import math
 """
 This code referenced to
            https://github.com/ultralytics/ultralytics/yolo/utils/metrics.py
@@ -354,9 +382,14 @@ def bbox_iou(box1, box2, xywh=True, GIoU=False, DIoU=False, CIoU=False, eps=1e-7
         return iou - (c_area - union) / c_area  # GIoU https://arxiv.org/pdf/1902.09630.pdf
     return iou  # IoU
 ```
+</details>
 
-##Smooth L1 loss
+<details>
+<summary>Smooth L1 loss</summary>
+
+## Smooth L1 loss
 
 ![smooth_L1_loss](img/matheq/smoothl1.svg)
 
 <image src="img/smooth_L1.png">
+</details>
