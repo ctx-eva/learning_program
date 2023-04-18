@@ -4,11 +4,11 @@
 
 ## Binary Cross Entropy loss (BCEloss)
 
-![BCE_loss](img/matheq/BCE_loss.svg)
+![BCE_loss](images/matheq/BCE_loss.svg)
 
 当 $\nu_{gt}$ 是 one-hot 类型时
 
-![BCE_loss one-hot](img/matheq/BEC_loss-one-hot.svg)
+![BCE_loss one-hot](images/matheq/BEC_loss-one-hot.svg)
 
 ```python
 import torch
@@ -29,11 +29,11 @@ criterion(output, target)
 
 ## Balanced BCE
 
-![Balanced BCE_loss](img/matheq/Balanced-BCE_loss.svg)
+![Balanced BCE_loss](images/matheq/Balanced-BCE_loss.svg)
 
 当 $\nu_{gt}$ 是 one-hot 类型时
 
-![Balanced BCE_loss ong-hot](img/matheq/Balanced-BCE_loss-one-hot.svg)
+![Balanced BCE_loss ong-hot](images/matheq/Balanced-BCE_loss-one-hot.svg)
 
 Balanced BCE 通过 $\alpha$ 控制正负样本的加权参数,改变正负样本参与loss计算的贡献比例,对目标检测类任务通过 $\alpha$ 平衡正负样本间的数量差异.
 
@@ -72,20 +72,20 @@ class BalancedBCELoss(nn.Module):
 
 ## Focal loss (FL)
 
-paper: (https://arxiv.org/pdf/1708.02002.pdf)
+paper: [Focal Loss for Dense Object Detection](https://arxiv.org/pdf/1708.02002.pdf)
 
-![Focal loss](img/matheq/FL.svg)
+![Focal loss](images/matheq/FL.svg)
 
 当 $\nu_{gt}$ 是 one-hot 类型时
 
-![Focal loss one-hot](img/matheq/FL-one-hot.svg)
+![Focal loss one-hot](images/matheq/FL-one-hot.svg)
 
 加入 $\alpha$ 正负样本均衡后,可表示如下:
 
-![Focal loss one-hot balance](img/matheq/FL_with_balance.svg) 
+![Focal loss one-hot balance](images/matheq/FL_with_balance.svg) 
 
 <!-- ![Focal loss 形式](https://img-blog.csdnimg.cn/dd83fc4d77944c589941fc08b5d6c889.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAQmlnSGFvNjg4,size_20,color_FFFFFF,t_70,g_se,x_16) -->
-![Focal loss 形式](img/FocalLoss.png)
+![Focal loss 形式](images/FocalLoss.png)
 
 Focal loss 通过 $(1 - \nu_{t})^{\gamma}$ 控制难易样本参与loss计算的贡献比例, 对于正样本易分样本 $\nu_{pred}$ 越接近1, $(1 - \nu_{pred})^{\gamma}$ 接近0, 参与loss比例越小; 难分样本, $\nu_{pred}$ 越接近0, $(1 - \nu_{pred})^{\gamma}$ 接近1, 参与loss比例越大. 同样对于负样本, 易分样本 $\nu_{pred}$ 越接近0, $(1 - ( 1 - \nu_{pred}))^{\gamma} = \nu_{pred}^{\gamma}$ 接近0, 参与loss比例越小; 相反负样本的难分样本 $\nu_{pred}^{\gamma}$ 接近1, 参与loss比例越大.
 
@@ -129,15 +129,15 @@ class FocalLoss(nn.Module):
 
 ## Generalized Focal Loss (GFL)
 
-paper:(https://arxiv.org/pdf/2006.04388.pdf)
+paper:[Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection](https://arxiv.org/pdf/2006.04388.pdf)
 
 ### Quality Focal Loss (QFL)
 
-![QFL](img/matheq/QFL.svg)
+![QFL](images/matheq/QFL.svg)
 
 在QFL中负样本的真值 $\nu_{gt} = 0$, 正样本真值 $\nu_{gt} \in [0,1]$ 是0~1之间的概率值.
 
-<image src="img/QualityFocalLoss.png">
+<image src="images/QualityFocalLoss.png">
 
 图:当 $\nu_{gt} = 0.5$ 时, $-\left| \nu_{gt} - \sigma(\nu_{pred}) \right|^{\beta}$ 的变化趋势
 <br/>
@@ -145,7 +145,7 @@ paper:(https://arxiv.org/pdf/2006.04388.pdf)
 
 当真值 $\nu_{gt} \in {0,1}$ 是 one-hot类型时, QFL和FL具有相同的形式.
 
-![QFL2FL](img/matheq/QFL2FL.svg)
+![QFL2FL](images/matheq/QFL2FL.svg)
 
 ```python
 import torch
@@ -184,7 +184,7 @@ Distribution Focal Loss 在 Generalized Focal Loss 中被用作 box_regression. 
 
 $\hat{y} = \int_\infty^\infty \delta(x-y)xdx \sim \int_{y_0}^{y_n} P(x_i)x_i = \sum_{i=0}^n P(x_i)x_i $, $ P(x_i) $ 表示在 $x_i$ 处对 $\hat{y}$ 的概率估计,且有 $\sum^n_{i=0} P(x_i) = 1$. 通过设定分度将边界的估计问题转化为对边界值的分布概率的估计问题.
 
-![DFL](img/matheq/DFL.svg),![tj](img/matheq/DFL-tj.svg)
+![DFL](images/matheq/DFL.svg),![tj](images/matheq/DFL-tj.svg)
 
 DFL的优化目标使得 $\hat{y}$ 概率映射到 $ceil(y)$ 和 $floor(y)$ 的线性加权和最小
 
@@ -224,9 +224,9 @@ referenced to https://blog.csdn.net/qq_38308388/article/details/121640312**
 
 ## Varifocal Loss (VFL)
 
-paper:(https://arxiv.org/pdf/2008.13367.pdf)
+paper:[VarifocalNet: An IoU-aware Dense Object Detector](https://arxiv.org/pdf/2008.13367.pdf)
 
-![VFL](img/matheq/VFL.svg)
+![VFL](images/matheq/VFL.svg)
 
 VFL以IoU-Aware Classification Score(IACS)作为优化目标, $\nu_{gt-score}$ 是pred_box和gt_box的IOU * $\nu_{gt}$. 
 
@@ -293,17 +293,17 @@ IOU_loss ($\cal{L}_{IOU}$)是anchor-pred的IOU和 $\nu_{gt}$ 的交叉熵, $\cal
 
 #### IOU backpropagation
 
-paper:(https://arxiv.org/pdf/1608.01471.pdf)
+paper:[UnitBox: An Advanced Object Detection Network](https://arxiv.org/pdf/1608.01471.pdf)
 
 IOU_loss的反向传播需要计算 $b^{pred}$ 对于 $\cal{L}_{IOU}$ 中各项的偏导.
 
 $\frac{\partial{\mathcal{S}^{pred}}}{\partial{b^{pred}_r}\ (\mathbf{or} \ \partial{b^{pred}_l})} = b^{pred}_b - b^{pred}_t \ ,\ \frac{\partial{\mathcal{S}^{pred}}}{\partial{b^{pred}_t}\ (\mathbf{or} \ \partial{b^{pred}_b})} = b^{pred}_r - b^{pred}_l $
 
-![iou_bp1](img/matheq/IOUbp1.svg),![iou_bp2](img/matheq/IOUbp2.svg)
+![iou_bp1](images/matheq/IOUbp1.svg),![iou_bp2](images/matheq/IOUbp2.svg)
 
 ### GIOU
 
-paper:(https://arxiv.org/pdf/1902.09630.pdf)
+paper:[Generalized Intersection over Union: A Metric and A Loss for Bounding Box Regression](https://arxiv.org/pdf/1902.09630.pdf)
 
 $\mathbf{GIOU} = \mathbf{IOU} - \frac{A^c-Union}{A^c}$
 
@@ -315,7 +315,7 @@ $\cal{L}_{GIOU} = 1 - \mathbf{GIOU} \ \in[0,2]$
 
 ### DIOU
 
-paper:(https://arxiv.org/pdf/1911.08287v1.pdf)
+paper:[Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression](https://arxiv.org/pdf/1911.08287v1.pdf)
 
 $\mathbf{DIOU} = \mathbf{IOU} - \left(\frac{\rho^2({bc}^{pred},{bc}^{gt})}{c^2}\right) = \mathbf{IOU} - \left(\frac{d^2}{c^2}\right)$
 
@@ -327,7 +327,7 @@ $\cal{L}_{DIOU} = 1 - \mathbf{DIOU} \ \in[0,2]$
 
 ### CIOU
 
-paper:(https://arxiv.org/pdf/2005.03572.pdf)
+paper:[Enhancing Geometric Factors in Model Learning and Inference for Object Detection and Instance Segmentation](https://arxiv.org/pdf/2005.03572.pdf)
 
 $\mathbf{CIOU} = \mathbf{IOU} - \left(\frac{\rho^2({bc}^{pred},{bc}^{gt})}{c^2}+\alpha\nu\right),\ \nu = \frac{4}{\pi^2}(arctan\frac{w^{gt}}{h^{gt}}-arctan\frac{w}{h})^2,\ \alpha=\frac{\nu}{1-IOU+\nu}$
 
@@ -389,7 +389,7 @@ def bbox_iou(box1, box2, xywh=True, GIoU=False, DIoU=False, CIoU=False, eps=1e-7
 
 ## Smooth L1 loss
 
-![smooth_L1_loss](img/matheq/smoothl1.svg)
+![smooth_L1_loss](images/matheq/smoothl1.svg)
 
-<image src="img/smooth_L1.png">
+<image src="images/smooth_L1.png">
 </details>

@@ -10,7 +10,7 @@ The summary is based on version 8.0.49
 
 ```
 |-- __init__.py
-|-- datasets/                          #默认的多种数据文件读取配置
+|-- datasets/                          # 多种类型数据格式文件配置
 |-- hub
 |   |-- __init__.py
 |   |-- auth.py
@@ -20,7 +20,7 @@ The summary is based on version 8.0.49
 |   |-- v3/                            # yolov3网络的配置文件
 |   |-- v5/                            # yolov5网络的配置文件
 |   `-- v8/
-|       |-- cls /                      # yolov8分类网络的配置文件
+|       |-- cls/                       # yolov8分类网络的配置文件
 |       |-- seg/                       # yolov8实例分割网络的配置文件
 |       |-- yolov8.yaml                # yolov8目标检测网络的配置文件
 |-- nn
@@ -56,7 +56,7 @@ The summary is based on version 8.0.49
     |-- engine
     |   |-- __init__.py
     |   |-- exporter.py                # 实现多种类型的模型文件导出
-    |   |-- model.py                   # 初始化模型的位置,也是所有任务(train,val,predict,export)的入口
+    |   |-- model.py                   # YOLO类:创建模型实例,初始化模型,加载模型权重的位置,也是所有任务(train,val,predict,export)的入口
     |   |-- predictor.py               # BasePredictor类:是DetectionPredictor和ClassificationPredictor的基类,主要提供stream_inference函数实现预测过程,
     |   |                              #     主要包含输入图像加载,创建autobackend 对象实现模型加载,调用autobackend forward进行模型运算,
     |   |                              #     在该类实现了对预测过程的结果进行保存和展示
