@@ -43,14 +43,14 @@ The summary is based on version 8.0.49
     |   |-- augment.py                 # 1.为推断过程提供LetterBox类处理输入图像的尺寸,
     |   |                              # 2.为检测和分割train,val任务YOLODataset类提供了v8_transforms数据扩增变换函数,其中包含多种形式的图像变换类,用RandomPerspective类为对应变换的提供相应目标坐标变换.
     |   |                              #     为classify任务ClassificationDataset类提供了classify_transforms,classify_albumentations的数据扩增函数
-    |   |-- base.py                    #
+    |   |-- base.py                    # BaseDataset类
     |   |-- build.py                   # 为train,val,inference过程提供合适的数据加载函数dataloader
     |   |-- dataloaders                
     |   |   |-- __init__.py            
     |   |   |-- stream_loaders.py      # 为推断过程提供多种形式的图片读入方式,按要求对图片进行变换,并调整图片尺寸以适应网络
     |   |   |-- v5augmentations.py     
     |   |   `-- v5loader.py            
-    |   |-- dataset.py                 # dataloader的主体实现检测和分割过程为YOLODataset类,分类过程为ClassificationDataset类
+    |   |-- dataset.py                 # dataloader的主体实现检测和分割过程为YOLODataset类基类为BaseDataset类,重载了cache_labels,get_labels,build_transforms函数,分类过程为ClassificationDataset类
     |   |-- dataset_wrappers.py        
     |   `-- utils.py                   # 1.为augment提供mask计算 2.为train,val过程验证数据是否存在
     |-- engine
