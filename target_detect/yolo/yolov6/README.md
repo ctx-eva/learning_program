@@ -341,7 +341,7 @@ class MyRepVGGBlock(nn.Module):
 RepVGG网络的输入输出关系表示如下:
 
 $$
-output = \sum_{i=1}^{3}(input*W_i,\mu,\sigma,\gamma,\beta) = \sum_{i=1}^{3}\gamma_i\frac{1}{\sqrt{\sigma_i^2+\epsilon}}(input*W_i-\mu_i)
+output = \sum_{i=1}^{3}(input * W_i,\mu,\sigma,\gamma,\beta) = \sum_{i=1}^{3}\gamma_i\frac{1}{\sqrt{\sigma_i^2+\epsilon}}(input * W_i-\mu_i)
 $$
 
 每个分支的方差由下式表示:
