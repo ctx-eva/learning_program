@@ -214,11 +214,11 @@ def fuse_conv_and_bn(conv, bn):
 
 #### 推理阶段的重参数化过程解析：
 
-由于分支都有一个BN层，因此，需要将BN和卷积层融合（将shortcut分支视为一个$1*1$卷积层）;
+由于分支都有一个BN层，因此，需要将BN和卷积层融合（将shortcut分支视为一个 $1*1$ 卷积层）;
 
-卷积和BN融合后，得到了一个$3*3$卷积和两个$1*1$卷积，需要将$1*1$卷积通过zero-padding的方式变成$3*3$卷积;
+卷积和BN融合后，得到了一个 $3*3$ 卷积和两个 $1*1$ 卷积，需要将$1*1$卷积通过zero-padding的方式变成 $3*3$ 卷积;
 
-最后将3个$3*3$卷积加起来，即可得到一个单一的$3*3$卷积。
+最后将3个 $3*3$ 卷积加起来，即可得到一个单一的 $3*3$ 卷积。
 
 参考博客:[RepVGG: Making VGG-style ConvNets Great Again](https://blog.csdn.net/oYeZhou/article/details/112798915)
 
@@ -339,13 +339,17 @@ class MyRepVGGBlock(nn.Module):
 针对条件2,由于无法通过对输入分布进行假设并得出具体结论。因此对每个分支的标准差进行分析。
 
 RepVGG网络的输入输出关系表示如下:
+
 $$
 output = \sum_{i=1}^{3}{(input*W_i,\mu,\sigma,\gamma,\beta)} = \sum_{i=1}^{3}{\gamma_i\frac{1}{\sqrt{\sigma_i^2+\epsilon}}(input*W_i-\mu_i)}
 $$
+
 每个分支的方差由下式表示:
+
 $$
 D(output) = \frac{\gamma_i^2}{\sigma_i^2+\epsilon} D(input*W_i)
 $$
+
 BN层的参数$\sigma$,$\gamma$会影响量化误差的分布.这里跳过对于custemL2的分析.通过分析各条通道上的$\frac{\gamma_i^2}{\sigma_i^2+\epsilon}$值,得到在$1*1$和identity通道存在异常.
 
 S2:先取消identity通路的BN层.考虑误差的反向传递,$3*3$,$1*1$分支的输出分布均值为$\beta_{(3)}$,$\beta_{(1)}$,在相同的初始化条件下$\beta_{(3)}^0 = \beta_{(1)}^0$,根据SGD的优化迭代方式,有如下:
