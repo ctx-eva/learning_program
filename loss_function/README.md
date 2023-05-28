@@ -67,7 +67,7 @@ class BalancedBCELoss(nn.Module):
 ```
 </details>
 
-<details open>
+<details>
 <summary>Focal loss</summary>
 
 ## Focal loss (FL)
@@ -220,6 +220,18 @@ referenced to https://blog.csdn.net/qq_38308388/article/details/121640312**
 </details>
 
 <details>
+<summary>对于QFL估计的一些优化想法</summary>
+
+QFL的目标除了计算分类的BCE loss,还计算分类预测值和真值之间的距离 $\left| \nu_{gt} - \sigma(\nu_{pred}) \right|^{\beta}$ 。和focal loss相比，由于QFL在区域 $(0,1)$ 之间是双边函数，其值比focal loss更小。因此QFL有和focal loss相同的问题，即估计的结果不会和真值很接近。同时由于值变小估计优化的过程难度增加，需要放大QFL的权重系数。
+
+wing loss同样能够使得预测值趋向于真值，可以结合wing loss和QFL,优化QFL的性能。
+
+使用wing代替预测值和真值之间的距离，对比 $\gamma > 1$ 的focal loss,在接近真值时有更大的偏差和倒数，相比 $\gamma < 1$时其求导更简单。
+
+![WingBCE](images/wingBCE.png)
+</details>
+
+<details>
 <summary>Varifocal Loss</summary>
 
 ## Varifocal Loss (VFL)
@@ -251,10 +263,10 @@ class VarifocalLoss(nn.Module):
         self.gamma = gamma
         self.reduction = reduction
 
-    def forward(self, pred, gt_score):, label):
+    def forward(self, pred, gt_score, label):
         pred = pred.sigmoid()
-        weight = self.alpha * pred.pow(self.gamma) * (1 - gt_score.ge(0).float()) + gt_score
-        # weight = self.alpha * pred.pow(self.gamma) * (1 - label) + gt_score * label
+        # weight = self.alpha * pred.pow(self.gamma) * (1 - gt_score.ge(0).float()) + gt_score
+        weight = self.alpha * pred.pow(self.gamma) * (1 - label) + gt_score * label
         # with torch.cuda.amp.autocast(enabled=False):
         loss = self.loss_fcn(pred, gt_score) * weight
         if self.reduction == 'mean':
@@ -265,7 +277,7 @@ class VarifocalLoss(nn.Module):
             return loss
 ```
 
-VFL要解决的问题是,在目标检测中正负样本不均衡,负样本的数量远远大于正样本,通过 $\nu_{pred}^\gamma$ 来削减负样本对结果的影响,对负样本其估计越好,$\nu_{pred}^\gamma$ 值越小,即对越容易分类的负样本给予越低的权重,对越难估计的负样本给予越高的权重,更关注对于难估计的负样本的调整.对于正样本使用参数 $\nu_{gt}$ ,对框iou更大的目标给予更大的权重,使得网络更加关注对iou高的预测框的调整.
+VFL要解决的问题是,在目标检测中正负样本不均衡,负样本的数量远远大于正样本,通过 $\nu_{pred}^\gamma$ 来削减负样本对结果的影响,对负样本估计 $\nu_{pred}^\gamma$ 值越小,即对越容易分类的负样本给予越低的权重,对越难估计的负样本给予越高的权重,更关注对于难估计的负样本的调整.对于正样本使用参数 $\nu_{gt}$ ,对框iou更大的目标给予更大的权重,使得网络更加关注对iou高的预测框的调整.
 </details>
 
 <details>
@@ -385,6 +397,93 @@ def bbox_iou(box1, box2, xywh=True, GIoU=False, DIoU=False, CIoU=False, eps=1e-7
 </details>
 
 <details>
+<summary>PIOU Loss</summary>
+
+## Pixels-IoU Loss (PIOU Loss)
+
+paper:[PIoU Loss: Towards Accurate Oriented Object Detection in Complex Environments](https://arxiv.org/pdf/2007.09584.pdf)
+
+PIOU Loss 要解决的问题：通过使用方向边界框oriented bounding boxes (OBB)进行目标检测可以减少目标与背景区域的重叠来更好地定位旋转对象。一般通过在水平边界框检测器引入由距离损失优化的附加角度尺寸构建的。但是这样导致估计与IoU的相关性较松散，对具有高纵横比的对象不敏感。
+
+PIOU Loss推导如下：
+对每个像素点 $\mathbf{p}_{i,j}$ 和obb框 $\mathbf{b}$ 有如下关系:
+$$
+ \delta (\mathbf{p}_{i,j}|\mathbf{b}) = \left\{\begin{align}
+1, &d^w_{i,j}\leq \frac{w}{2},d^h_{i,j}\leq \frac{h}{2}  \\
+0, &otherwise  \\
+\end{align}\right.
+$$
+其中：
+$$
+\begin{align}
+d^w_{i,j} &= \left|d_{i,j}cos\beta\right|,d^h_{i,j} = \left|d_{i,j}sin\beta\right| \\
+d_{i,j} &= \sqrt{(c_x-i)^2+(c_y-j)^2} \\
+\beta &= \left\{\begin{align}
+\theta+arccos\frac{c_x-i}{d_{i,j}}, &&c_y-j\ge 0 \\
+\theta-arccos\frac{c_x-i}{d_{i,j}}, &&c_y-j < 0
+\end{align}\right.
+\end{align}
+$$
+PIOU 表达形式：
+$$
+PIOU(\mathbf{b},\mathbf{b'}) = \frac{S_{\mathbf{b}\cap\mathbf{b'}}}{S_{\mathbf{b}\cup\mathbf{b'}}} = \frac{S_{\mathbf{b}\cap\mathbf{b'}}}{w*h+w'*h'-S_{\mathbf{b}\cap\mathbf{b'}}}
+$$
+其中：
+$$
+S_{\mathbf{b}\cap\mathbf{b'}} = \sum_{p_{i,j}\in(\mathbf{b},\mathbf{b'})}\delta(\mathbf{p}_{i,j}|\mathbf{b})\delta(\mathbf{p}_{i,j}|\mathbf{b'}) \approx \sum_{p_{i,j}\in(\mathbf{b},\mathbf{b'})}F(\mathbf{p}_{i,j}|\mathbf{b})F(\mathbf{p}_{i,j}|\mathbf{b'}),\ where \ K(d,s) = 1-\frac{1}{1+e^{-k(d-s)}}
+$$
+PIOU Loss的表示形式如下：
+$$
+L_{piou} = \frac{-\sum_{\mathbf{b,b'}\in M}ln(PIOU\mathbf{b,b'})}{\left|M\right|}
+$$
+由于函数 $\delta()$ 不可导，用函数 $F()$ 来表示，当 $d-s > 0$ 时，$F()$ 趋近于1， 当 $d-s <0$ 时，$F()$ 趋近于0. 点$(i,j)$和方向边界框的关系由下图(a)表示。函数$F()$的形式由下图(b)表示。
+![PIOULoss](images/PIOULoss.jpg)
+
+</details>
+
+<details>
+<summary>PSC</summary>
+
+## Phase-Shifting Coder
+
+Paper:[Phase-Shifting Coder: Predicting Accurate Orientation in Oriented Object Detection](https://arxiv.org/pdf/2211.06368.pdf)
+
+Phase-Shifting Coder 主要解决在方向边界框的估计问题中，角度变化过程中不连续的问题。对于一个范围在$(-\pi,\pi)$或者$(0,2\pi)$变化的角度值，其编码过程如下式：
+
+$$
+x_n = cos(\varphi +\frac{2n\pi}{N_{step}}), \ where\ n=1,2,...,N_{step}
+$$
+其解码过程如下：
+$$
+\varphi = -arctan\frac{\sum^{N_{step}}_{n=1}x_nsin\frac{2n\pi}{N_{step}}}{\sum^{N_{step}}_{n=1}x_ncos\frac{2n\pi}{N_{step}}}
+$$
+由于cos值的范围在 $(-1,1)$ 之间，而sigmoid函数输出范围在 $(-1,1)$，计算loss时所用的 $x_{pred}$ 需要进行如下处理。
+$$
+x_{pred} = 2*sigmoid(x_feat)-1
+$$
+```python
+import math
+import torch
+
+def psc_decode(theta_cos):
+    theta_cos = theta_cos*2 - 1 
+    my_sin = theta_cos[...,1]*math.sin(2/3*math.pi)+theta_cos[...,2]*math.sin(4/3*math.pi)
+    my_cos = theta_cos[...,0]-theta_cos[...,1]/2-theta_cos[...,2]/2
+    theta = torch.atan2(my_sin,my_cos)
+    return -theta.unsqueeze(-1)
+```
+</details>
+
+<details>
+<summary>关于方向边界框估计的一些想法，针对PIOU的计算过程的优化</summary>
+
+针对PIOU的计算，若方向边界框角度表示为方向和x轴之间顺时针的夹角，其中 $d^w_{i,j}$ , $d^h_{i,j}$ 可以表示为点到直线的距离。对于过中心点 $(c_x,c_y)$ 角度为 $\theta$ 的方向边界框，图上任意一点 $i,j$ 到方向边界框中心线的距离表示为 $\frac{-1/tan\theta(i-x_c)+(j-y_c)}{\sqrt{1+1/tan\theta^2}}$, $\frac{tan\theta(i-x_c)+(j-y_c)}{\sqrt{1+tan\theta^2}}$, $tan\theta$ 可以由PSC的解码过程求得，$tan\theta = -\frac{\sum^{N_{step}}_{n=1}x_nsin\frac{2n\pi}{N_{step}}}{\sum^{N_{step}}_{n=1}x_ncos\frac{2n\pi}{N_{step}}}$.
+
+求PIOU时，需要求解图上每一点到各个gt_box的所属关系，和各个select_pred_box的所属关系，计算gt_box和pred_box的PIOU值时，求对应的各层的交值。在框筛选中的select_candidates_in_gts函数中，计算anc_points $i,j$ $w-w_{i,j},w+w_{i,j},h-h_{i,j},h-h{i,j}$ 若不存在负值则表示anc_points在方向边界框内。而在get_box_metrics函数中计算piou,需要先用select_candidates_in_gts筛选pred_box,再用roll_out的方式计算每个pair组合，不能做到并行计算。
+
+</details>
+
+<details>
 <summary>Smooth L1 loss</summary>
 
 ## Smooth L1 loss
@@ -392,4 +491,44 @@ def bbox_iou(box1, box2, xywh=True, GIoU=False, DIoU=False, CIoU=False, eps=1e-7
 ![smooth_L1_loss](images/matheq/smoothl1.svg)
 
 <image src="images/smooth_L1.png">
+</details>
+
+<details>
+<summary>Wing loss</summary>
+
+## wing loss
+
+paper:[Wing Loss for Robust Facial Landmark Localisation with Convolutional NeuralNetworks](https://openaccess.thecvf.com/content_cvpr_2018/papers/Feng_Wing_Loss_for_CVPR_2018_paper.pdf)
+
+wing loss是解决在关键点坐标回归过程中，传统的L1，L2 loss对异常值敏感的问题。在关键点坐标回归任务中神经网络的训练应该更多地关注具有小范围或中等范围误差的样本。
+
+$$
+Wing_{loss} = \left\{\begin{align}
+&\omega ln(1+\left|x\right|/\epsilon), &&if\ \left|x\right| < \omega \\
+&\left|x\right|-C, &&otherwise
+\end{align}\right. where, C=\omega - \omega ln(1+\omega / \epsilon)
+$$
+## Wing loss
+<image src="images/Wingloss.jpg">
+
+```python
+import math
+import torch
+class WingLoss(nn.Module):
+    def __init__(self, omega=10, epsilon=2):
+        super(WingLoss, self).__init__()
+        self.omega = omega
+        self.epsilon = epsilon
+        self.C = self.omega - self.omega * math.log(1 + self.omega / self.epsilon)
+
+    def forward(self, pred, target):
+        y = target
+        y_hat = pred
+        delta_y = (y - y_hat).abs()
+        delta_y1 = delta_y[delta_y < self.omega]
+        delta_y2 = delta_y[delta_y >= self.omega]
+        loss1 = self.omega * torch.log(1 + delta_y1 / self.epsilon)
+        loss2 = delta_y2 - self.C
+        return (loss1.sum() + loss2.sum()) / (len(loss1) + len(loss2))
+```
 </details>
