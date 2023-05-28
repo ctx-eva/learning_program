@@ -355,7 +355,7 @@ BN层的参数$\sigma$,$\gamma$会影响量化误差的分布.这里跳过对于
 S2:先取消identity通路的BN层.考虑误差的反向传递,$3*3$,$1*1$分支的输出分布均值为$\beta_{(3)}$,$\beta_{(1)}$,在相同的初始化条件下$\beta_{(3)}^0 = \beta_{(1)}^0$,根据SGD的优化迭代方式,有如下:
 $$E({output}^{k}) = \beta_{(3)}+\beta_{(1)}+\beta_{(0)}$$
 $$\beta_{(3)}^{k+1} = \beta_{(3)}^k - {lr}^{k+1} * \frac{\partial{l(W,\gamma,\beta)}}{\partial{\beta_{(3)}^k}} = \beta_{(3)}^k - {lr}^{k+1} * \frac{\partial{l(W,\gamma,\beta)}}{\partial{{output}^{k+1}}} = \beta_{(1)}^k - {lr}^{k+1} * \frac{\partial{l(W,\gamma,\beta)}}{\partial{{output}^{k+1}}} = \beta_{(1)}^{k+1}$$
-假设使得输出维持0均值分布$\beta_{(3)}+\beta_{(1)}+\beta_{(0)} = 0$, $\beta_{(3)}=\beta_{(1)}=-\beta_{(0)}/2$.因为$E(output_0)=E(ReLU(input)) \ge 0$,要使得0均值成立,会造成方差增大.
+假设使得输出维持0均值分布$\beta_{(3)}+\beta_{(1)}+\beta_{(0)} = 0$, $\beta_{(3)}=\beta_{(1)}=-\beta_{(0)}/2$.因为$E(output_0)=E(ReLU(input))\ge0$,要使得0均值成立,会造成方差增大.
 
 结论:S2验证了仅取消identity通路的BN层效果不好的原因
 
@@ -415,7 +415,11 @@ class MyQARepVGGBlock(MyRepVGGBlock):
 
 ### Post-Training Quantization(PTQ)
 
+<<<<<<< HEAD
 
 
 ### Quantization-Aware Training(QAT)
 
+=======
+### Quantization-Aware Training(QAT)
+>>>>>>> 3f50f3e89152b88780687b67e6072ae36fcef294
