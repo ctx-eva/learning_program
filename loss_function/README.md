@@ -220,18 +220,6 @@ referenced to https://blog.csdn.net/qq_38308388/article/details/121640312**
 </details>
 
 <details>
-<summary>对于QFL估计的一些优化想法</summary>
-
-QFL的目标除了计算分类的BCE loss,还计算分类预测值和真值之间的距离 $\left| \nu_{gt} - \sigma(\nu_{pred}) \right|^{\beta}$ 。和focal loss相比，由于QFL在区域 $(0,1)$ 之间是双边函数，其值比focal loss更小。因此QFL有和focal loss相同的问题，即估计的结果不会和真值很接近。同时由于值变小估计优化的过程难度增加，需要放大QFL的权重系数。
-
-wing loss同样能够使得预测值趋向于真值，可以结合wing loss和QFL,优化QFL的性能。
-
-使用wing代替预测值和真值之间的距离，对比 $\gamma > 1$ 的focal loss,在接近真值时有更大的偏差和倒数，相比 $\gamma < 1$时其求导更简单。
-
-![WingBCE](images/wingBCE.png)
-</details>
-
-<details>
 <summary>Varifocal Loss</summary>
 
 ## Varifocal Loss (VFL)
@@ -486,7 +474,7 @@ def psc_decode(theta_cos):
 
 ## Wing loss
 
-paper:[Wing Loss for Robust Facial Landmark Localisation with Convolutional NeuralNetworks](https://openaccess.thecvf.com/content_cvpr_2018/papers/Feng_Wing_Loss_for_CVPR_2018_paper.pdf)
+paper:[Wing Loss for Robust Facial Landmark Localisation with Convolutional NeuralNetworks](https://arxiv.org/pdf/1711.06753.pdf)
 
 wing loss是解决在关键点坐标回归过程中，传统的L1，L2 loss对异常值敏感的问题。在关键点坐标回归任务中神经网络的训练应该更多地关注具有小范围或中等范围误差的样本。
 
@@ -520,6 +508,8 @@ class WingLoss(nn.Module):
 <summary>Adaptive Wing loss</summary>
 
 ## Adaptive Wing loss
+
+paper:[Adaptive Wing Loss for Robust Face Alignment via Heatmap Regression](https://arxiv.org/pdf/1904.07399v1.pdf)
 
 wing loss 和 L1，L2 loss相比较有更加陡峭的曲线放大了小误差的影响，对小范围或中等范围误差的样本有更好的收敛。但是由于wing loss的导数不连续在距离为零的两侧发生跳变，因此估计值会在真值附近反复波动，并且很难实现无偏估计。
 
