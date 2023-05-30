@@ -412,14 +412,6 @@ class MyQARepVGGBlock(MyRepVGGBlock):
 ## YOLOv6的量化过程
 
 
-
 ### Post-Training Quantization(PTQ)
 
-<<<<<<< HEAD
-
-
 ### Quantization-Aware Training(QAT)
-
-=======
-### Quantization-Aware Training(QAT)
->>>>>>> 3f50f3e89152b88780687b67e6072ae36fcef294

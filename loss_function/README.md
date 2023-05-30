@@ -407,35 +407,25 @@ PIOU Loss 要解决的问题：通过使用方向边界框oriented bounding boxe
 
 PIOU Loss推导如下：
 对每个像素点 $\mathbf{p}_{i,j}$ 和obb框 $\mathbf{b}$ 有如下关系:
-$$
- \delta (\mathbf{p}_{i,j}|\mathbf{b}) = \left\{\begin{align}
-1, &d^w_{i,j}\leq \frac{w}{2},d^h_{i,j}\leq \frac{h}{2}  \\
-0, &otherwise  \\
-\end{align}\right.
-$$
+
+<image src="images/matheq/PIOU_pixel.svg">
+
 其中：
-$$
-\begin{align}
-d^w_{i,j} &= \left|d_{i,j}cos\beta\right|,d^h_{i,j} = \left|d_{i,j}sin\beta\right| \\
-d_{i,j} &= \sqrt{(c_x-i)^2+(c_y-j)^2} \\
-\beta &= \left\{\begin{align}
-\theta+arccos\frac{c_x-i}{d_{i,j}}, &&c_y-j\ge 0 \\
-\theta-arccos\frac{c_x-i}{d_{i,j}}, &&c_y-j < 0
-\end{align}\right.
-\end{align}
-$$
+
+<image src="images/matheq/PIOU_pixel_com.svg">
+
 PIOU 表达形式：
-$$
-PIOU(\mathbf{b},\mathbf{b'}) = \frac{S_{\mathbf{b}\cap\mathbf{b'}}}{S_{\mathbf{b}\cup\mathbf{b'}}} = \frac{S_{\mathbf{b}\cap\mathbf{b'}}}{w*h+w'*h'-S_{\mathbf{b}\cap\mathbf{b'}}}
-$$
+
+<image src="images/matheq/PIOU.svg">
+
 其中：
-$$
-S_{\mathbf{b}\cap\mathbf{b'}} = \sum_{p_{i,j}\in(\mathbf{b},\mathbf{b'})}\delta(\mathbf{p}_{i,j}|\mathbf{b})\delta(\mathbf{p}_{i,j}|\mathbf{b'}) \approx \sum_{p_{i,j}\in(\mathbf{b},\mathbf{b'})}F(\mathbf{p}_{i,j}|\mathbf{b})F(\mathbf{p}_{i,j}|\mathbf{b'}),\ where \ K(d,s) = 1-\frac{1}{1+e^{-k(d-s)}}
-$$
+
+<image src="images/matheq/PIOU_cap.svg"><image src="images/matheq/PIOU_cap_cond.svg">
+
 PIOU Loss的表示形式如下：
-$$
-L_{piou} = \frac{-\sum_{\mathbf{b,b'}\in M}ln(PIOU\mathbf{b,b'})}{\left|M\right|}
-$$
+
+<image src="images/matheq/PIOU_loss.svg">
+
 由于函数 $\delta()$ 不可导，用函数 $F()$ 来表示，当 $d-s > 0$ 时，$F()$ 趋近于1， 当 $d-s <0$ 时，$F()$ 趋近于0. 点$(i,j)$和方向边界框的关系由下图(a)表示。函数$F()$的形式由下图(b)表示。
 ![PIOULoss](images/PIOULoss.jpg)
 
@@ -450,17 +440,15 @@ Paper:[Phase-Shifting Coder: Predicting Accurate Orientation in Oriented Object 
 
 Phase-Shifting Coder 主要解决在方向边界框的估计问题中，角度变化过程中不连续的问题。对于一个范围在$(-\pi,\pi)$或者$(0,2\pi)$变化的角度值，其编码过程如下式：
 
-$$
-x_n = cos(\varphi +\frac{2n\pi}{N_{step}}), \ where\ n=1,2,...,N_{step}
-$$
+<image src="images/matheq/pscencode.svg">
+
 其解码过程如下：
-$$
-\varphi = -arctan\frac{\sum^{N_{step}}_{n=1}x_nsin\frac{2n\pi}{N_{step}}}{\sum^{N_{step}}_{n=1}x_ncos\frac{2n\pi}{N_{step}}}
-$$
+<image src="images/matheq/pscdecode.svg">
+
 由于cos值的范围在 $(-1,1)$ 之间，而sigmoid函数输出范围在 $(-1,1)$，计算loss时所用的 $x_{pred}$ 需要进行如下处理。
-$$
-x_{pred} = 2*sigmoid(x_feat)-1
-$$
+
+<image src="images/matheq/pscrescale.svg">
+
 ```python
 import math
 import torch
@@ -479,7 +467,7 @@ def psc_decode(theta_cos):
 
 针对PIOU的计算，若方向边界框角度表示为方向和x轴之间顺时针的夹角，其中 $d^w_{i,j}$ , $d^h_{i,j}$ 可以表示为点到直线的距离。对于过中心点 $(c_x,c_y)$ 角度为 $\theta$ 的方向边界框，图上任意一点 $i,j$ 到方向边界框中心线的距离表示为 $\frac{-1/tan\theta(i-x_c)+(j-y_c)}{\sqrt{1+1/tan\theta^2}}$, $\frac{tan\theta(i-x_c)+(j-y_c)}{\sqrt{1+tan\theta^2}}$, $tan\theta$ 可以由PSC的解码过程求得，$tan\theta = -\frac{\sum^{N_{step}}_{n=1}x_nsin\frac{2n\pi}{N_{step}}}{\sum^{N_{step}}_{n=1}x_ncos\frac{2n\pi}{N_{step}}}$.
 
-求PIOU时，需要求解图上每一点到各个gt_box的所属关系，和各个select_pred_box的所属关系，计算gt_box和pred_box的PIOU值时，求对应的各层的交值。在框筛选中的select_candidates_in_gts函数中，计算anc_points $i,j$ $w-w_{i,j},w+w_{i,j},h-h_{i,j},h-h{i,j}$ 若不存在负值则表示anc_points在方向边界框内。而在get_box_metrics函数中计算piou,需要先用select_candidates_in_gts筛选pred_box,再用roll_out的方式计算每个pair组合，不能做到并行计算。
+求PIOU时，需要求解图上每一点到各个gt_box的所属关系，和各个select_pred_box的所属关系，计算gt_box和pred_box的PIOU值时，求对应的各层的交值。在框筛选中的select_candidates_in_gts函数中，计算anc_points $(i,j)$ 的 $w-w_{i,j},w+w_{i,j},h-h_{i,j},h+h_{i,j}$ 若不存在负值则表示anc_points在方向边界框内。而在get_box_metrics函数中计算piou,需要先用select_candidates_in_gts筛选pred_box,再用roll_out的方式计算每个pair组合，不能做到并行计算。
 
 </details>
 
@@ -496,19 +484,14 @@ def psc_decode(theta_cos):
 <details>
 <summary>Wing loss</summary>
 
-## wing loss
+## Wing loss
 
 paper:[Wing Loss for Robust Facial Landmark Localisation with Convolutional NeuralNetworks](https://openaccess.thecvf.com/content_cvpr_2018/papers/Feng_Wing_Loss_for_CVPR_2018_paper.pdf)
 
 wing loss是解决在关键点坐标回归过程中，传统的L1，L2 loss对异常值敏感的问题。在关键点坐标回归任务中神经网络的训练应该更多地关注具有小范围或中等范围误差的样本。
 
-$$
-Wing_{loss} = \left\{\begin{align}
-&\omega ln(1+\left|x\right|/\epsilon), &&if\ \left|x\right| < \omega \\
-&\left|x\right|-C, &&otherwise
-\end{align}\right. where, C=\omega - \omega ln(1+\omega / \epsilon)
-$$
-## Wing loss
+<image src="images/matheq/Wingloss.svg"><br/>
+
 <image src="images/Wingloss.jpg">
 
 ```python
@@ -531,4 +514,23 @@ class WingLoss(nn.Module):
         loss2 = delta_y2 - self.C
         return (loss1.sum() + loss2.sum()) / (len(loss1) + len(loss2))
 ```
+</details>
+
+<details>
+<summary>Adaptive Wing loss</summary>
+
+## Adaptive Wing loss
+
+wing loss 和 L1，L2 loss相比较有更加陡峭的曲线放大了小误差的影响，对小范围或中等范围误差的样本有更好的收敛。但是由于wing loss的导数不连续在距离为零的两侧发生跳变，因此估计值会在真值附近反复波动，并且很难实现无偏估计。
+
+设计Adaptive Wing loss的要求是，对正样本loss影响（以及梯度）应该开始增加，以便训练能够集中于减少这些误差。然后，随着误差非常接近零(在某个邻域范围内时)，loss的影响应该会迅速减少，这样这些“足够好”的像素就不再被关注。
+
+<image src="images/matheq/Awingloss.svg">
+
+其中：
+
+<image src="images/matheq/Awing_cond.svg"> <br/> 
+
+<image src="images/Awingloss.jpg">
+
 </details>
