@@ -417,6 +417,8 @@ PIOU Loss的表示形式如下：
 由于函数 $\delta()$ 不可导，用函数 $F()$ 来表示，当 $d-s > 0$ 时，$F()$ 趋近于1， 当 $d-s <0$ 时，$F()$ 趋近于0. 点$(i,j)$和方向边界框的关系由下图(a)表示。函数$F()$的形式由下图(b)表示。
 ![PIOULoss](images/PIOULoss.jpg)
 
+ There is an implementation for calculating Pixels-IoU Loss in the path "./piou". Although it not calculating in the form of pixel, it shows much more convenient parallel processing as the same as normal box-iou form. The code is forked from the repositories of https://github.com/zf020114/DARDet. I tried to give the explanation how this code calculating the intersection of a pair rotated boxes, Also working to revise an box assigner from tal for oriented bounding boxes detection.
+
 </details>
 
 <details>
@@ -438,6 +440,7 @@ Phase-Shifting Coder 主要解决在方向边界框的估计问题中，角度�
 <image src="images/matheq/pscrescale.svg">
 
 ```python
+"""PSC decode"""
 import math
 import torch
 
@@ -448,15 +451,6 @@ def psc_decode(theta_cos):
     theta = torch.atan2(my_sin,my_cos)
     return -theta.unsqueeze(-1)
 ```
-</details>
-
-<details>
-<summary>关于方向边界框估计的一些想法，针对PIOU的计算过程的优化</summary>
-
-针对PIOU的计算，若方向边界框角度表示为方向和x轴之间顺时针的夹角，其中 $d^w_{i,j}$ , $d^h_{i,j}$ 可以表示为点到直线的距离。对于过中心点 $(c_x,c_y)$ 角度为 $\theta$ 的方向边界框，图上任意一点 $i,j$ 到方向边界框中心线的距离表示为 $\frac{-1/tan\theta(i-x_c)+(j-y_c)}{\sqrt{1+1/tan\theta^2}}$, $\frac{tan\theta(i-x_c)+(j-y_c)}{\sqrt{1+tan\theta^2}}$, $tan\theta$ 可以由PSC的解码过程求得，$tan\theta = -\frac{\sum^{N_{step}}_{n=1}x_nsin\frac{2n\pi}{N_{step}}}{\sum^{N_{step}}_{n=1}x_ncos\frac{2n\pi}{N_{step}}}$.
-
-求PIOU时，需要求解图上每一点到各个gt_box的所属关系，和各个select_pred_box的所属关系，计算gt_box和pred_box的PIOU值时，求对应的各层的交值。在框筛选中的select_candidates_in_gts函数中，计算anc_points $(i,j)$ 的 $w-w_{i,j},w+w_{i,j},h-h_{i,j},h+h_{i,j}$ 若不存在负值则表示anc_points在方向边界框内。而在get_box_metrics函数中计算piou,需要先用select_candidates_in_gts筛选pred_box,再用roll_out的方式计算每个pair组合，不能做到并行计算。
-
 </details>
 
 <details>
