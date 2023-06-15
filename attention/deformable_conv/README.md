@@ -61,9 +61,12 @@ def _set_lr(module, grad_input, grad_output):
 
 ### 计算卷积激活位置
 使用self.p_conv计算输入层每个卷积位置上的附加偏置
-_get_p_0 根据offset的w,h计算卷积中心位置值，x,y各重复$ks \times ks$次
-_get_p_n 根据kernel_size计算初始卷积核偏置，x,y各重复$ks \times ks$次
-_get_p计算卷积核每个位置对应的激活位置$p = p_0 + p_n + \Delta p$
+
+_get_p_0 根据offset的w,h计算卷积中心位置值，x,y各重复 $ks \times ks$ 次
+
+_get_p_n 根据kernel_size计算初始卷积核偏置，x,y各重复 $ks \times ks$ 次
+
+_get_p计算卷积核每个位置对应的激活位置 $p = p_0 + p_n + \Delta p $
 ```python
 def forward(self, x):
     offset = self.p_conv(x)
@@ -111,12 +114,15 @@ def _get_p(self, offset, dtype):
 
 ### 双线性插值计算激活位置在输入层上的值
 p.contiguous().permute(0, 2, 3, 1)将p转成连续内存将第一维转到最后一维，维度为 $(b,h,w,2 \times ks \times ks)$
+
 激活位置$p$,取其x,y对应的floor,ceil四角坐标在输入层上的值，使用torch.clamp排除在输入层区域外的值，$p$前N个值对应x坐标，后N个值对应y坐标，$N = ks \times ks $
+
 双线新插值的公式如下:
+
 <image src="./images/linear_ interpolation_formula.svg" style="zoom:200%">
 
 式中: $Q_{lt}$ , $Q_{lb}$ , $Q_{rt}$ , $Q_{rb}$ 分别表示插值点左上，左下，右上，右下的点，$ x_r-x_l , y_b - y_t $ 表示x,y方向插值采样点间隔值,在这里 $x_r-x_l=1,y_b-y_t=1$, 
-同时可得 $x_r-x_p = 1 + (x_l-x_p), y_b-y_p = 1 + (y_t - y_p), x_p-x_l=1-(x_r-x_p), y_p-y_t=1-(y_b-y_p)$,分别计算出左上，左下，右上，右下方向上的插值权重 $G(q,p)$ 。
+同时可得 $x_r-x_p = 1 + (x_l-x_p), y_b-y_p = 1 + (y_t - y_p), x_p-x_l=1-(x_r-x_p), y_p-y_t=1-(y_b-y_p)$ ,分别计算出左上，左下，右上，右下方向上的插值权重 $G(q,p)$ 。
 _get_x_q 根据q点坐标在输入层上取值，得到x_offset, $ dim = (b,input_channels,h,w,ks \times ks )$ , 根据插值权重 $G(q,p)$ 对各个方向上的x_offset进行加权求和。
 
 ``` python
