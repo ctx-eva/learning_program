@@ -124,6 +124,7 @@ p.contiguous().permute(0, 2, 3, 1)将p转成连续内存将第一维转到最后
 式中: $Q_{lt}$ , $Q_{lb}$ , $Q_{rt}$ , $Q_{rb}$ 分别表示插值点左上，左下，右上，右下的点，$ x_r-x_l , y_b - y_t $ 表示x,y方向插值采样点间隔值,在这里 $x_r-x_l=1,y_b-y_t=1$, 
 同时可得 $x_r-x_p = 1 + (x_l-x_p), y_b-y_p = 1 + (y_t - y_p), x_p-x_l=1-(x_r-x_p), y_p-y_t=1-(y_b-y_p)$ ,分别计算出左上，左下，右上，右下方向上的插值权重 $G(q,p)$ 。
 _get_x_q 根据q点坐标在输入层上取值，得到x_offset, $ dim = (b,input_channels,h,w,ks \times ks )$ , 根据插值权重 $G(q,p)$ 对各个方向上的x_offset进行加权求和。
+torch.gather按维度筛选出对应index的参数重行组合。
 
 ``` python
 # (b, h, w, 2N)
@@ -206,4 +207,3 @@ out = self.conv(x_offset)
 
 return out
 ```
-
