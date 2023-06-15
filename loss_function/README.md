@@ -184,7 +184,7 @@ Distribution Focal Loss 在 Generalized Focal Loss 中被用作 box_regression. 
 
 $\hat{y} = \int_\infty^\infty \delta(x-y)xdx \sim \int_{y_0}^{y_n} P(x_i)x_i = \sum_{i=0}^n P(x_i)x_i $, $ P(x_i) $ 表示在 $x_i$ 处对 $\hat{y}$ 的概率估计,且有 $\sum^n_{i=0} P(x_i) = 1$. 通过设定分度将边界的估计问题转化为对边界值的分布概率的估计问题.
 
-![DFL](images/matheq/DFL.svg),![tj](images/matheq/DFL-tj.svg)
+![DFL](images/matheq/DFL.svg),![condition](images/matheq/DFL-tj.svg)
 
 DFL的优化目标使得 $\hat{y}$ 概率映射到 $ceil(y)$ 和 $floor(y)$ 的线性加权和最小
 

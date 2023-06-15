@@ -13,6 +13,10 @@
 `-- Readme.md
 ```
 
+## Pixel-IOU calculate
+
+The original repository link is https://github.com/zf020114/DARDet
+
 ### 由 $(x,y,w,h,\theta)$ 表示的rectangle，计算四角顶点
 <image src="../images/oriented_bounding_boxes.png">
 
@@ -139,10 +143,13 @@ def get_in_box_points(polys1: torch.Tensor, polys2: torch.Tensor):
     norm_ad = torch.sum(ad * ad, dim=-1)    # (n, 1)
     # NOTE: the expression looks ugly but is stable if the two boxes are exactly the same
     # also stable with different scale of bboxes
-    cond1 = (p_ab / norm_ab > - 1e-6) * \
-        (p_ab / norm_ab < 1 + 1e-6)   # (n, 4) 相当于 cos(p_i,a,b)
+    cond1 = (p_ab / norm_ab > - 1e-6) * \ 
+        (p_ab / norm_ab < 1 + 1e-6)   # (n, 4) 
     cond2 = (p_ad / norm_ad > - 1e-6) * \
-        (p_ad / norm_ad < 1 + 1e-6)   # (n, 4) 相当于 cos(p_i,a,d)
+        (p_ad / norm_ad < 1 + 1e-6)   # (n, 4)
+    #cond = ap*ab(ad)/ab(ad)^2 = |pa|*|ab|*cos(p_i,a,b)/(|ab|*|ab|)
+    #若角p_i,a,b为钝角则cond<0,若角p_i,a,b为锐角同时点p落在rectangle边上有|pa|/|ab| = 1/cos(p_i,a,b),则cond=1，
+    #若点p_i在renctangle外cond>1,在内则cond<1
     return cond1 * cond2
 ```
 

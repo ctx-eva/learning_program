@@ -1,3 +1,7 @@
+"""
+This code is come from the repository https://github.com/meituan/YOLOv6
+"""
+
 import torch
 import torch.nn as nn
 import numpy as np
