@@ -1,23 +1,33 @@
 # Deformable Convolutional
 
 Paper: [Deformable Convolutional Networks](https://arxiv.org/pdf/1703.06211.pdf)
+
 $\qquad$ [Deformable ConvNets v2: More Deformable, Better Results](https://arxiv.org/pdf/1811.11168.pdf)
+
 $\qquad$ [An Empirical Study of Spatial Attention Mechanisms in Deep Networks](https://arxiv.org/pdf/1904.05873.pdf)
 
 The original repository link is https://github.com/4uiiurz1/pytorch-deform-conv-v2
 
-Deformable Conv通过对输入层做卷积，先通过旁路卷积计算输出通道数为$ks \times ks$的field offset $\Delta p$,表示每个卷积位置偏置偏离的预测，
+Deformable Conv通过对输入层做卷积，先通过旁路卷积计算输出通道数为 $ks \times ks$ 的field offset $\Delta p$,表示每个卷积位置偏置偏离的预测，
 再根据 $\Delta p$ 获得参与计算卷积运算位置的值，之后再通过主卷积计算获得输出层
+
 Deformable Conv(变形卷积) 表达形式
-一般卷积的表达形式：$y(p_0) = \sum_{p_n\in R}w(p_n)x(p_0 + p_n)$,$p_n$代表了卷积核感受野中相对于卷积位置的偏置。
-变形卷积的表达形式：$y(p_0) = \sum_{p_n\in R}w(p_n)x(p_0 + p_n + \Delta p)$,通过$p_n+\Delta p$来改变卷积激活数据的偏置位置。
-对$p = p_0 + p_n + \Delta p$所对应的值,$x(p) = x(p_0 + p_n + \Delta p) = \sum_{q}G(q,p)x(q),\sum_{q}G(q,p)x(q)$表示对点p处的值进行双线性插值
+
+一般卷积的表达形式： $y(p_0) = \sum_{p_n\in R}w(p_n)x(p_0 + p_n)$ , $p_n$ 代表了卷积核感受野中相对于卷积位置的偏置。
+
+变形卷积的表达形式： $y(p_0) = \sum_{p_n\in R}w(p_n)x(p_0 + p_n + \Delta p)$ ,通过 $p_n+\Delta p$ 来改变卷积激活数据的偏置位置。
+
+对 $p = p_0 + p_n + \Delta p$ 所对应的值,$x(p) = x(p_0 + p_n + \Delta p) = \sum_{q}G(q,p)x(q),\sum_{q}G(q,p)x(q)$表示对点p处的值进行双线性插值
+
 Deformable Conv V2 表达形式 $y(p_0) = \sum_{p_n\in R}w(p_n)x(p_0 + p_n + \Delta p)\Delta m$, 在Deformable Conv的基础型上增加了对应位置值的缩放变量 $\Delta m \in (0,1)$
 
 ### Deformable Conv 类初始化
-self.p_conv 计算偏置offset的旁路卷积，output通道数为$2 \times ks \times ks$，对kernel的每个位置都预测两个偏置值(x,y各一个)
-self.m_conv 在Deformable Conv V2中，output通道数为$ks \times ks$，通过self.p_conv计算获得偏置在输入层上双线性插值获得的值每个kernel位置预测一个缩放值。
-self.conv 主卷积，计算输出层的feature map, stride=kernel_size表示通过self.p_conv计算获得偏置再双线性插值获得的$(h \times ks,w\times ks)$的feature map,每个$(ks \times ks)$区域计算一次卷积
+self.p_conv 计算偏置offset的旁路卷积，output通道数为 $2 \times ks \times ks$ ，对kernel的每个位置都预测两个偏置值(x,y各一个)
+
+self.m_conv 在Deformable Conv V2中，output通道数为 $ks \times ks$ ，通过self.p_conv计算获得偏置在输入层上双线性插值获得的值每个kernel位置预测一个缩放值。
+
+self.conv 主卷积，计算输出层的feature map, stride=kernel_size表示通过self.p_conv计算获得偏置再双线性插值获得的 $(h \times ks,w\times ks)$ 的feature map,每个 $(ks \times ks)$ 区域计算一次卷积
+
 torch.nn.modules.module.register_module_backward_hook该函数返回一个关于输入的新梯度，该梯度将在随后的计算中代替grad_input，grad_input将只对应于作为位置参数给出的输入。
 ```python
 def __init__(self, inc, outc, kernel_size=3, padding=1, stride=1, bias=None, modulation=False):
@@ -104,6 +114,7 @@ p.contiguous().permute(0, 2, 3, 1)将p转成连续内存将第一维转到最后
 激活位置$p$,取其x,y对应的floor,ceil四角坐标在输入层上的值，使用torch.clamp排除在输入层区域外的值，$p$前N个值对应x坐标，后N个值对应y坐标，$N = ks \times ks $
 双线新插值的公式如下:
 <image src="./images/linear_ interpolation_formula.svg" style="zoom:200%">
+
 式中: $Q_{lt}$ , $Q_{lb}$ , $Q_{rt}$ , $Q_{rb}$ 分别表示插值点左上，左下，右上，右下的点，$ x_r-x_l , y_b - y_t $ 表示x,y方向插值采样点间隔值,在这里 $x_r-x_l=1,y_b-y_t=1$, 
 同时可得 $x_r-x_p = 1 + (x_l-x_p), y_b-y_p = 1 + (y_t - y_p), x_p-x_l=1-(x_r-x_p), y_p-y_t=1-(y_b-y_p)$,分别计算出左上，左下，右上，右下方向上的插值权重 $G(q,p)$ 。
 _get_x_q 根据q点坐标在输入层上取值，得到x_offset, $ dim = (b,input_channels,h,w,ks \times ks )$ , 根据插值权重 $G(q,p)$ 对各个方向上的x_offset进行加权求和。
