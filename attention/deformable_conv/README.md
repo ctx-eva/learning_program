@@ -8,8 +8,12 @@ $\qquad$ [An Empirical Study of Spatial Attention Mechanisms in Deep Networks](h
 
 The original repository link is https://github.com/4uiiurz1/pytorch-deform-conv-v2
 
-Deformable Conv通过对输入层做卷积，先通过旁路卷积计算输出通道数为 $ks \times ks$ 的field offset $\Delta p$,表示每个卷积位置偏置偏离的预测，
+Deformable Conv通过对输入层做卷积，先通过旁路卷积计算输出通道数为 $2 \times ks \times ks$ 的field offset $\Delta p$,表示每个卷积位置x,y偏置偏离的预测，
 再根据 $\Delta p$ 获得参与计算卷积运算位置的值，之后再通过主卷积计算获得输出层
+
+Deformable Conv 结构如下图所示:
+
+<image src="./images/deformconv.png">
 
 Deformable Conv(变形卷积) 表达形式
 
