@@ -35,18 +35,23 @@ def rotated_box_to_poly(rotated_boxes: torch.Tensor):
 
     x_ctr = rotated_boxes[:, 0]
     y_ctr = rotated_boxes[:, 1]
-    x1 = x_ctr + cs * (w / 2.0) - ss * (-h / 2.0)
-    x2 = x_ctr + cs * (w / 2.0) - ss * (h / 2.0)
-    x3 = x_ctr + cs * (-w / 2.0) - ss * (h / 2.0)
-    x4 = x_ctr + cs * (-w / 2.0) - ss * (-h / 2.0)
 
-    y1 = y_ctr + ss * (w / 2.0) + cs * (-h / 2.0)
-    y2 = y_ctr + ss * (w / 2.0) + cs * (h / 2.0)
-    y3 = y_ctr + ss * (-w / 2.0) + cs * (h / 2.0)
-    y4 = y_ctr + ss * (-w / 2.0) + cs * (-h / 2.0)
+    #参考上图theta表示box俺顺时针方向旋转角度
+    x1 = x_ctr + cs * (w / 2.0) - ss * (-h / 2.0)    #x1 = xc + w/2*cos(theta) + h/2*sin(theta)
+    y1 = y_ctr + ss * (w / 2.0) + cs * (-h / 2.0)    #y1 = xc + w/2*sin(theta) - h/2*cos(theta)
+    #（x1,y1）表示旋转之前（xmax,ymin）右上的点对应旋转之后的值
+
+    x2 = x_ctr + cs * (w / 2.0) - ss * (h / 2.0) 
+    y2 = y_ctr + ss * (w / 2.0) + cs * (h / 2.0)   #（x2,y2）表示旋转之前（xmax,ymax）右下的点对应旋转之后的值
+
+    x3 = x_ctr + cs * (-w / 2.0) - ss * (h / 2.0)
+    y3 = y_ctr + ss * (-w / 2.0) + cs * (h / 2.0)  #（x3,y3）表示旋转之前（xmin,ymax）左下的点对应旋转之后的值
+    
+    x4 = x_ctr + cs * (-w / 2.0) - ss * (-h / 2.0)
+    y4 = y_ctr + ss * (-w / 2.0) + cs * (-h / 2.0) #（x4,y4）表示旋转之前（xmin,ymin）左上的点对应旋转之后的值
 
     polys = torch.stack([x1, y1, x2, y2, x3, y3, x4, y4], dim=-1)
-    polys = polys.reshape(-1, 4, 2)  # to (n, 4, 2) 先最右最下最左最上，每行一个点
+    polys = polys.reshape(-1, 4, 2)  # to (n, 4, 2) 第二维顺序：右上->右下->左下->左上
 
     return polys
 ```
@@ -148,8 +153,11 @@ def get_in_box_points(polys1: torch.Tensor, polys2: torch.Tensor):
     cond2 = (p_ad / norm_ad > - 1e-6) * \
         (p_ad / norm_ad < 1 + 1e-6)   # (n, 4)
     #cond = ap*ab(ad)/ab(ad)^2 = |pa|*|ab|*cos(p_i,a,b)/(|ab|*|ab|)
-    #若角p_i,a,b为钝角则cond<0,若角p_i,a,b为锐角同时点p落在rectangle边上有|pa|/|ab| = 1/cos(p_i,a,b),则cond=1，
-    #若点p_i在renctangle外cond>1,在内则cond<1
+    #判断p_i是否在rectangle内部，首先排除角p_i,a,b为钝角的点，此时cond<0,
+    #若角p_i,a,b为锐角cond>0,若p落在rectangle边上有|ab|/|pa| = cos(p_i,a,b),此时cond=1，
+    #p_i在rectangle内部|ab|/|pa| > cos(p_i,a,b),此时cond<1
+    #若点p_i在renctangle外cond>1,在内则cond<=1
+    #当满足cond=True对应的顶点，计算piou的相交面积时，顶点坐标作为intersection的顶点参与计算。
     return cond1 * cond2
 ```
 
@@ -180,7 +188,10 @@ def build_vertices(polys1: torch.Tensor, polys2: torch.Tensor,
     vertices = torch.cat([polys1, polys2, inters.view(
         [n, -1, 2])], dim=1)
     # Bool (n, 4+4+16)
-    mask = torch.cat([c1_in_2, c2_in_1, mask_inter.view([n, -1])], dim=1)
+    mask = torch.cat([c1_in_2, c2_in_1, mask_inter.view([n, -1])], dim=1) 
+    # c1_in_2对应polys1是否是相交区域顶点
+    # c2_in_1对应polys2是否是相交区域顶点
+    # mask_inter.view([n, -1])对应各边所在直线的交点是否是相交区域顶点
     return vertices, mask  #对各焦点和顶点进行拼接，同时拼接各点是否是intersection的顶点
 ```
 

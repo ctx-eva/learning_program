@@ -20,18 +20,23 @@ def rotated_box_to_poly(rotated_boxes: torch.Tensor):
 
     x_ctr = rotated_boxes[:, 0]
     y_ctr = rotated_boxes[:, 1]
-    x1 = x_ctr + cs * (w / 2.0) - ss * (-h / 2.0)
-    x2 = x_ctr + cs * (w / 2.0) - ss * (h / 2.0)
-    x3 = x_ctr + cs * (-w / 2.0) - ss * (h / 2.0)
-    x4 = x_ctr + cs * (-w / 2.0) - ss * (-h / 2.0)
 
-    y1 = y_ctr + ss * (w / 2.0) + cs * (-h / 2.0)
-    y2 = y_ctr + ss * (w / 2.0) + cs * (h / 2.0)
-    y3 = y_ctr + ss * (-w / 2.0) + cs * (h / 2.0)
-    y4 = y_ctr + ss * (-w / 2.0) + cs * (-h / 2.0)
+    #参考上图theta表示box俺顺时针方向旋转角度
+    x1 = x_ctr + cs * (w / 2.0) - ss * (-h / 2.0)    #x1 = xc + w/2*cos(theta) + h/2*sin(theta)
+    y1 = y_ctr + ss * (w / 2.0) + cs * (-h / 2.0)    #y1 = xc + w/2*sin(theta) - h/2*cos(theta)
+    #（x1,y1）表示旋转之前（xmax,ymin）右上的点对应旋转之后的值
+
+    x2 = x_ctr + cs * (w / 2.0) - ss * (h / 2.0) 
+    y2 = y_ctr + ss * (w / 2.0) + cs * (h / 2.0)   #（x2,y2）表示旋转之前（xmax,ymax）右下的点对应旋转之后的值
+
+    x3 = x_ctr + cs * (-w / 2.0) - ss * (h / 2.0)
+    y3 = y_ctr + ss * (-w / 2.0) + cs * (h / 2.0)  #（x3,y3）表示旋转之前（xmin,ymax）左下的点对应旋转之后的值
+    
+    x4 = x_ctr + cs * (-w / 2.0) - ss * (-h / 2.0)
+    y4 = y_ctr + ss * (-w / 2.0) + cs * (-h / 2.0) #（x4,y4）表示旋转之前（xmin,ymin）左上的点对应旋转之后的值
 
     polys = torch.stack([x1, y1, x2, y2, x3, y3, x4, y4], dim=-1)
-    polys = polys.reshape(-1, 4, 2)  # to (n, 4, 2) 先最右最下最左最上，每行一个点
+    polys = polys.reshape(-1, 4, 2)  # to (n, 4, 2) 第二维顺序：右上->右下->左下->左上
 
     return polys
 

@@ -1,0 +1,9 @@
+R_{\Theta,m}^d=\begin{bmatrix}
+cos(m\theta_1) & -sin(m\theta_1) & 0 & 0 &  &  &  \\
+sin(m\theta_1) & cos(m\theta_1) & 0 & 0 &  &  &  \\
+0 & 0 & cos(m\theta_2) &  &  &  &  \\
+0 & 0 &  & cos(m\theta_2) &  &  &  \\
+ &  &  &  &  &  &  \\
+ &  &  &  &  &  &  \\
+ &  &  &  &  &  &  \\
+\end{bmatrix}

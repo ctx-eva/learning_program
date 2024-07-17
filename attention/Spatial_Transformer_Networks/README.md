@@ -8,7 +8,7 @@ $\qquad$ [Robust Scene Text Recognition with Automatic Rectification](https://ar
 
 $\qquad$ [ASTER: An Attentional Scene Text Recognizer with Flexible Rectification](https://sci-hub.se/10.1109/TPAMI.2018.2848939)
 
-the code is forked from original repository link https://https://github.com/ayumiymk/aster.pytorch/tree/master/lib/models
+the code is forked from original repository link (https://github.com/ayumiymk/aster.pytorch/tree/master/lib/models)
 
 原始版本的Spatial Transformer Networks 结构如下图所示:
 
